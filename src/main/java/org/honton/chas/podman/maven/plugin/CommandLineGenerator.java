@@ -11,11 +11,9 @@ import java.util.Set;
 public class CommandLineGenerator {
   private final List<String> command;
 
-  public CommandLineGenerator(PodmanGoal behavior) {
+  public CommandLineGenerator(RemoteInfo remoteInfo) {
     command = new ArrayList<>();
     command.add("podman");
-    behavior.addSubCommand(command);
-    RemoteInfo remoteInfo = behavior.remote;
     if (remoteInfo != null) {
       String url = remoteInfo.url;
       if (url != null) {
@@ -28,6 +26,10 @@ public class CommandLineGenerator {
         command.add(connection);
       }
     }
+  }
+
+  public void addCmd(String cmd) {
+    command.add(cmd);
   }
 
   public void addArgs(Map<String, String> buildArguments) {
@@ -69,13 +71,15 @@ public class CommandLineGenerator {
     command.add(name);
   }
 
-  public void addContainerFile(Path containerFile) {
-    command.add("--file");
-    command.add(containerFile.toString());
+  public void addContainerfile(String containerfile) {
+    if (!"Containerfile".equals(containerfile)) {
+      command.add("--file");
+      command.add(containerfile);
+    }
   }
 
-  public void addContext(Path containerFile) {
-    command.add(containerFile.toString());
+  public void addContext(Path contextDir) {
+    command.add("./" + contextDir.toString());
   }
 
   public List<String> getCommand() {

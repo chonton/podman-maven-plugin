@@ -49,8 +49,6 @@ public abstract class PodmanGoal extends AbstractMojo {
 
   protected abstract void doExecute() throws MojoExecutionException, IOException;
 
-  public abstract void addSubCommand(List<String> command);
-
   void pumpLog(InputStream is, Consumer<String> lineConsumer) {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
       reader.lines().forEach(lineConsumer);

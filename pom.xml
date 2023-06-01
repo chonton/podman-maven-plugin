@@ -78,13 +78,6 @@
   <dependencyManagement>
     <dependencies>
 
-      <!-- convergence between org.codehaus.plexus:plexus-archiver:4.7.1 and org.codehaus.plexus:plexus-io:3.4.1 -->
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>3.5.1</version>
-      </dependency>
-
       <!-- convergence between io.fabric8:zjsonpatch:0.3.0 and io.fabric8:kubernetes-client:6.6.2 -->
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -99,21 +92,28 @@
         <version>2.14.2</version>
       </dependency>
 
+      <!-- convergence between org.codehaus.plexus:plexus-archiver:4.7.1 and org.codehaus.plexus:plexus-io:3.4.1 -->
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>3.5.1</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
   <dependencies>
 
     <dependency>
       <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-client-api</artifactId>
+      <artifactId>kubernetes-client</artifactId>
       <version>6.6.2</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
       <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-client</artifactId>
+      <artifactId>kubernetes-client-api</artifactId>
       <version>6.6.2</version>
-      <scope>runtime</scope>
     </dependency>
 
     <dependency>
@@ -347,66 +347,21 @@
       <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
         <configuration>
-          <filterProperties>
-            <localRepository>${project.build.directory}/it-repo</localRepository>
-          </filterProperties>
           <goals>
-            <goal>install</goal>
+            <goal>verify</goal>
           </goals>
-          <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
-          <pomIncludes>
-            <pomInclude>*/pom.xml</pomInclude>
-          </pomIncludes>
-          <postBuildHookScript>verify</postBuildHookScript>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <settingsFile>src/it/settings.xml</settingsFile>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <postBuildHookScript>verify</postBuildHookScript>
         </configuration>
         <executions>
           <execution>
-            <id>install</id>
+            <id>integration-test</id>
             <goals>
               <goal>install</goal>
-            </goals>
-            <phase>package</phase>
-          </execution>
-          <execution>
-            <id>0-integration-tests</id>
-            <goals>
               <goal>run</goal>
-              <goal>verify</goal>
             </goals>
-            <configuration>
-              <invokerTest>package</invokerTest>
-            </configuration>
-          </execution>
-          <execution>
-            <id>10-integration-tests</id>
-            <goals>
-              <goal>run</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <invokerTest>extension</invokerTest>
-            </configuration>
-          </execution>
-          <execution>
-            <id>20-integration-tests</id>
-            <goals>
-              <goal>run</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <invokerTest>install</invokerTest>
-            </configuration>
-          </execution>
-          <execution>
-            <id>30-integration-tests</id>
-            <goals>
-              <goal>run</goal>
-              <goal>verify</goal>
-            </goals>
-            <configuration>
-              <invokerTest>tutorial</invokerTest>
-            </configuration>
           </execution>
         </executions>
       </plugin>

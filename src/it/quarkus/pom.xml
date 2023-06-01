@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.honton.chas.podman.it</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.0.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+
+  <artifactId>quarkus</artifactId>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.honton.chas</groupId>
+        <artifactId>podman-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-containerfile</id>
+            <goals>
+              <goal>containerfile</goal>
+            </goals>
+            <configuration>
+              <from>registry.access.redhat.com/ubi8/openjdk-11:1.15</from>
+              <layers>
+                <layer>
+                  <chown>nobody</chown>
+                  <srcs>
+                    <src>target/quarkus-app/lib/</src>
+                  </srcs>
+                  <dest>/deployments/lib/</dest>
+                </layer>
+                <layer>
+                  <chown>nobody</chown>
+                  <srcs>
+                    <src>target/quarkus-app/*.jar</src>
+                  </srcs>
+                  <dest>/deployments/</dest>
+                </layer>
+                <layer>
+                  <chown>nobody</chown>
+                  <srcs>
+                    <src>target/quarkus-app/app/</src>
+                  </srcs>
+                  <dest>/deployments/app/</dest>
+                </layer>
+                <layer>
+                  <chown>nobody</chown>
+                  <srcs>
+                    <src>target/quarkus-app/quarkus/</src>
+                  </srcs>
+                  <dest>/deployments/quarkus/</dest>
+                </layer>
+              </layers>
+              <expose>
+                <port>8080</port>
+              </expose>
+              <workdir>/work/</workdir>
+              <user>nobody</user>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
