@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.honton.chas</groupId>
@@ -300,8 +302,10 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?KubernetesInfo</code>]]></findRegex>
-              <replaceValue><![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/KubernetesInfo.html">KubernetesInfo</a></code>]]></replaceValue>
+              <findRegex>
+                <![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?KubernetesInfo</code>]]></findRegex>
+              <replaceValue>
+                <![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/KubernetesInfo.html">KubernetesInfo</a></code>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
@@ -314,8 +318,10 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(java\.util\.)?List&lt;(org\.honton\.chas\.podman\.maven\.plugin\.)?ReleaseInfo&gt;</code>]]></findRegex>
-              <replaceValue><![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/ReleaseInfo.html">ReleaseInfo</a>&gt;</code>]]></replaceValue>
+              <findRegex>
+                <![CDATA[<code>(java\.util\.)?List&lt;(org\.honton\.chas\.podman\.maven\.plugin\.)?ReleaseInfo&gt;</code>]]></findRegex>
+              <replaceValue>
+                <![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/ReleaseInfo.html">ReleaseInfo</a>&gt;</code>]]></replaceValue>
             </configuration>
           </execution>
         </executions>
@@ -465,6 +471,12 @@
                   <goal>sign</goal>
                 </goals>
                 <phase>verify</phase>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
               </execution>
             </executions>
           </plugin>
