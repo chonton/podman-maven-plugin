@@ -1,0 +1,45 @@
+name: Publish to GitHub
+
+on:
+  release:
+    branches-ignore:
+    - gh-pages
+    types:
+    - created
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Maven
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Generate Site
+      run: mvn site
+
+    - name: Upload Site Artifact
+      uses: actions/upload-pages-artifact@v1.0.8
+      with:
+        path: target/site
+
+  deploy:
+    needs: site
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2.0.1

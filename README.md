@@ -10,9 +10,9 @@ Use podman to build and push images. This has two goals:
 Build the containers using [podman](https://docs.podman.io/en/latest/markdown/podman-build.1.html).
 
 Deploy your containers to [docker desktop](https://docs.docker.com/desktop/kubernetes/) or
-[minikube](https://minikube.sigs.k8s.io/docs/) for integration testing using 
-[podman charts](https://github.com/chonton/podmanrepo-maven-plugin). Start k8s 
-pods/deployments/services during **pre-integration-test** phase. Use 
+[minikube](https://minikube.sigs.k8s.io/docs/) for integration testing using
+[podman charts](https://github.com/chonton/podmanrepo-maven-plugin).
+Start k8s pods/deployments/services during **pre-integration-test** phase. Use
 [failsafe](https://maven.apache.org/surefire/maven-failsafe-plugin/) to run integration tests during
 **integration-test** phase. Capture logs and uninstall k8s pods/deployments/services during the
 **post-integration-test** phase.
@@ -20,13 +20,13 @@ pods/deployments/services during **pre-integration-test** phase. Use
 # Plugin
 
 Plugin reports available at
-[plugin info](https://chonton.github.io/podman-maven-plugin/0.0.1/plugin-info.html).
+[plugin info](https://chonton.github.io/podman-maven-plugin/plugin-info.html).
 
 ## Containerfile Goal
 
-The [containerfile](https://chonton.github.io/podman-maven-plugin/0.0.1/containerfile.html) goal
-binds by default to the **prepare-package** phase. This goal creates
-*${project.build.directory}/contextDir/Containerfile* from the configuration.
+The [containerfile](https://chonton.github.io/podman-maven-plugin/containerfile-mojo.html) goal
+binds by default to the **prepare-package** phase.
+This goal creates *${project.build.directory}/contextDir/Containerfile* from the configuration.
 See [Containerfile](https://github.com/containers/common/blob/main/docs/Containerfile.5.md) for more
 information about Containerfile syntax.
 
@@ -63,7 +63,7 @@ information about Containerfile syntax.
 
 ## Build Goal
 
-The [build](https://chonton.github.io/podman-maven-plugin/0.0.1/build.html) goal binds by default to
+The [build](https://chonton.github.io/podman-maven-plugin/build-mojo.html) goal binds by default to
 the **package** phase. This goal will execute `podman build` with the proper parameters.
 
 ### Configuration
@@ -130,28 +130,4 @@ the **package** phase. This goal will execute `podman build` with the proper par
     </plugin>
   </plugins>
 </build>
-```
-
-## Use as a packaging extension
-
-```xml
-
-<project>
-  <modelVersion>4.0.0</modelVersion>
-
-  <groupId>com.example.podman</groupId>
-  <artifactId>chart</artifactId>
-  <packaging>tgz</packaging>
-
-  <build>
-    <extensions>
-      <extension>
-        <groupId>org.honton.chas</groupId>
-        <artifactId>podman-maven-plugin</artifactId>
-        <version>0.0.2</version>
-      </extension>
-    </extensions>
-  </build>
-
-</project>
 ```

@@ -9,8 +9,8 @@
   <version>0.0.1</version>
   <packaging>maven-plugin</packaging>
 
-  <name>podman Repo Maven Plugin</name>
-  <description>Use Maven repository for podman charts</description>
+  <name>Podman Maven Plugin</name>
+  <description>Use podman to build container images</description>
 
   <url>https://github.com/chonton/${project.artifactId}</url>
   <inceptionYear>2023</inceptionYear>
@@ -230,6 +230,12 @@
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>3.5.0</version>
+          <configuration>
+            <links>
+              <link>https://devdocs.io/openjdk~11/</link>
+              <link>http://commons.apache.org/fileupload/apidocs/</link>
+            </links>
+          </configuration>
         </plugin>
 
         <plugin>
@@ -254,7 +260,14 @@
 
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.9.1</version>
+          <version>3.12.1</version>
+          <!-- dependencies>
+            <dependency>
+              <groupId>org.apache.maven.skins</groupId>
+              <artifactId>maven-fluido-skin</artifactId>
+              <version>1.11.2</version>
+            </dependency>
+          </dependencies -->
         </plugin>
 
         <plugin>
@@ -293,7 +306,7 @@
         <version>1.1.0</version>
         <executions>
           <execution>
-            <id>KubernetesInfo</id>
+            <id>Layer</id>
             <goals>
               <goal>find-and-replace</goal>
             </goals>
@@ -302,14 +315,12 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex>
-                <![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?KubernetesInfo</code>]]></findRegex>
-              <replaceValue>
-                <![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/KubernetesInfo.html">KubernetesInfo</a></code>]]></replaceValue>
+              <findRegex><![CDATA[<code>(java\.util\.)?List&lt;(org\.honton\.chas\.podman\.maven\.plugin\.)?Layer&gt;</code>]]></findRegex>
+              <replaceValue><![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/Layer.html">Layer</a>&gt;</code>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
-            <id>ReleaseInfo</id>
+            <id>RemoteInfo</id>
             <goals>
               <goal>find-and-replace</goal>
             </goals>
@@ -318,10 +329,22 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex>
-                <![CDATA[<code>(java\.util\.)?List&lt;(org\.honton\.chas\.podman\.maven\.plugin\.)?ReleaseInfo&gt;</code>]]></findRegex>
-              <replaceValue>
-                <![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/ReleaseInfo.html">ReleaseInfo</a>&gt;</code>]]></replaceValue>
+              <findRegex><![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?RemoteInfo</code>]]></findRegex>
+              <replaceValue><![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/RemoteInfo.html">RemoteInfo</a></code>]]></replaceValue>
+            </configuration>
+          </execution>
+          <execution>
+            <id>ShellOrExec</id>
+            <goals>
+              <goal>find-and-replace</goal>
+            </goals>
+            <phase>site</phase>
+            <configuration>
+              <replacementType>file-contents</replacementType>
+              <baseDir>target/site/</baseDir>
+              <fileMask>.html</fileMask>
+              <findRegex><![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?ShellOrExec</code>]]></findRegex>
+              <replaceValue><![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/ShellOrExec.html">ShellOrExec</a></code>]]></replaceValue>
             </configuration>
           </execution>
         </executions>
@@ -422,6 +445,11 @@
     <plugins>
 
       <plugin>
+      <artifactId>maven-javadoc-plugin</artifactId>
+      <version>3.5.0</version>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-plugin-report-plugin</artifactId>
         <version>3.9.0</version>
         <configuration>
@@ -435,7 +463,6 @@
         <reportSets>
           <reportSet>
             <reports>
-              <report>index</report>
               <report>team</report>
               <report>licenses</report>
               <report>dependency-info</report>

@@ -4,8 +4,8 @@ package org.honton.chas.podman.maven.plugin;
 public class RemoteInfo {
 
   /** Url of podman remote service */
-  String url;
+  public String url;
 
   /** Remote podman connection name */
-  String connection;
+  public String connection;
 }
