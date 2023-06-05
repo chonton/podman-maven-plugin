@@ -28,11 +28,17 @@ public class CommandLineGenerator {
     }
   }
 
-  public void addCmd(String cmd) {
+  public CommandLineGenerator addCmd(String cmd) {
     command.add(cmd);
+    return this;
   }
 
-  public void addArgs(Map<String, String> buildArguments) {
+  public CommandLineGenerator addParameter(String parameter) {
+    command.add(parameter);
+    return this;
+  }
+
+  public CommandLineGenerator addArgs(Map<String, String> buildArguments) {
     if (buildArguments != null) {
       buildArguments.forEach(
           (k, v) -> {
@@ -40,6 +46,7 @@ public class CommandLineGenerator {
             command.add(k + "=" + v);
           });
     }
+    return this;
   }
 
   /**
@@ -48,7 +55,7 @@ public class CommandLineGenerator {
    * @param platforms the os/arch of the resulting image(s)
    * @return true if multi-platform
    */
-  public boolean addPlatforms(List<String> platforms) {
+  private boolean addPlatforms(List<String> platforms) {
     if (platforms != null) {
       Set<String> set = new LinkedHashSet<>();
       platforms.forEach(p -> Arrays.stream(p.split(",")).map(String::strip).forEach(set::add));
@@ -61,28 +68,31 @@ public class CommandLineGenerator {
     return false;
   }
 
-  public void addManifest(String name) {
-    command.add("--manifest");
-    command.add(name);
+  public CommandLineGenerator addPlatformAndImage(List<String> platforms, String image) {
+    if (addPlatforms(platforms)) {
+      command.add("--manifest");
+    } else {
+      command.add("--tag");
+    }
+    command.add(image);
+    return this;
   }
 
-  public void addTag(String name) {
-    command.add("--tag");
-    command.add(name);
-  }
-
-  public void addContainerfile(String containerfile) {
+  public CommandLineGenerator addContainerfile(String containerfile) {
     if (!"Containerfile".equals(containerfile)) {
       command.add("--file");
       command.add(containerfile);
     }
+    return this;
   }
 
-  public void addContext(Path contextDir) {
+  public CommandLineGenerator addContext(Path contextDir) {
     command.add("./" + contextDir.toString());
+    return this;
   }
 
   public List<String> getCommand() {
     return command;
   }
+
 }

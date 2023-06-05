@@ -6,7 +6,7 @@
 
   <groupId>org.honton.chas</groupId>
   <artifactId>podman-maven-plugin</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <packaging>maven-plugin</packaging>
 
   <name>Podman Maven Plugin</name>
@@ -254,20 +254,8 @@
         </plugin>
 
         <plugin>
-          <artifactId>maven-scm-publish-plugin</artifactId>
-          <version>3.2.1</version>
-        </plugin>
-
-        <plugin>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.12.1</version>
-          <!-- dependencies>
-            <dependency>
-              <groupId>org.apache.maven.skins</groupId>
-              <artifactId>maven-fluido-skin</artifactId>
-              <version>1.11.2</version>
-            </dependency>
-          </dependencies -->
         </plugin>
 
         <plugin>
@@ -419,25 +407,6 @@
         </executions>
       </plugin>
 
-      <!-- publish site to github,
-      1. mvn [clean install] site-deploy
-      -->
-      <plugin>
-        <artifactId>maven-scm-publish-plugin</artifactId>
-        <configuration>
-          <content>target/site</content>
-          <scmBranch>gh-pages</scmBranch>
-          <tryUpdate>true</tryUpdate>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>publish-scm</goal>
-            </goals>
-            <phase>site-deploy</phase>
-          </execution>
-        </executions>
-      </plugin>
     </plugins>
   </build>
 
@@ -481,7 +450,7 @@
   </reporting>
 
   <profiles>
-    <!-- release to maven central
+    <!-- release to maven central (used by .github/workflows/publish.yaml)
     mvn clean deploy -P release
     -->
     <profile>

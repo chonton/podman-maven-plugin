@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -17,11 +19,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 /** podman goal base functionality */
 public abstract class PodmanGoal extends AbstractMojo {
+
   private static final Pattern WARNING =
       Pattern.compile("\\[?(warning)]?:? ?(.+)", Pattern.CASE_INSENSITIVE);
-
-  private static final Pattern ERROR =
-      Pattern.compile("\\[?(error)]?:? ?(.+)", Pattern.CASE_INSENSITIVE);
 
   /** Skip upgrade */
   @Parameter(property = "podman.skip", defaultValue = "false")
@@ -57,17 +57,28 @@ public abstract class PodmanGoal extends AbstractMojo {
     }
   }
 
-  void executeCommand(List<String> command) throws MojoExecutionException, IOException {
+  void executeCommand(CommandLineGenerator generator) throws MojoExecutionException, IOException {
+    executeCommand(generator.getCommand(), null);
+  }
+
+  void executeCommand(List<String> command, String stdin)
+      throws MojoExecutionException, IOException {
+    getLog().info(String.join(" ", command));
+    Process process = new ProcessBuilder(command).start();
+
+    ForkJoinPool pool = ForkJoinPool.commonPool();
+    pool.execute(() -> pumpLog(process.getInputStream(), getLog()::info));
+    pool.execute(() -> pumpLog(process.getErrorStream(), this::errorLine));
+
+    OutputStream os = process.getOutputStream();
+    if (stdin != null) {
+      os.write(stdin.getBytes(StandardCharsets.UTF_8));
+    }
+    os.close();
+
     try {
-      getLog().info(String.join(" ", command));
-      Process process = new ProcessBuilder(command).start();
-
-      ForkJoinPool pool = ForkJoinPool.commonPool();
-      pool.execute(() -> pumpLog(process.getInputStream(), getLog()::info));
-      pool.execute(() -> pumpLog(process.getErrorStream(), this::logLine));
-
       if (process.waitFor() != 0) {
-        throw new MojoExecutionException("helm exit value: " + process.exitValue());
+        throw new MojoExecutionException("podman exit value: " + process.exitValue());
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -75,17 +86,12 @@ public abstract class PodmanGoal extends AbstractMojo {
     }
   }
 
-  private void logLine(String s) {
-    Matcher error = ERROR.matcher(s);
-    if (error.matches()) {
-      getLog().error(error.group(2));
+  private void errorLine(String s) {
+    Matcher warning = WARNING.matcher(s);
+    if (warning.matches()) {
+      getLog().warn(warning.group(2));
     } else {
-      Matcher warning = WARNING.matcher(s);
-      if (warning.matches()) {
-        getLog().warn(warning.group(2));
-      } else {
-        getLog().info(s);
-      }
+      getLog().info(s);
     }
   }
 }
