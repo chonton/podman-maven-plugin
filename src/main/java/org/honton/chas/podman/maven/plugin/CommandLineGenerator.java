@@ -11,20 +11,17 @@ import java.util.Set;
 public class CommandLineGenerator {
   private final List<String> command;
 
-  public CommandLineGenerator(RemoteInfo remoteInfo) {
+  public CommandLineGenerator(PodmanGoal goal) {
     command = new ArrayList<>();
     command.add("podman");
-    if (remoteInfo != null) {
-      String url = remoteInfo.url;
-      if (url != null) {
-        command.add("--url");
-        command.add(url);
-      }
-      String connection = remoteInfo.connection;
-      if (connection != null) {
-        command.add("--connection");
-        command.add(connection);
-      }
+
+    if (goal.url != null) {
+      command.add("--url");
+      command.add(goal.url);
+    }
+    if (goal.connection != null) {
+      command.add("--connection");
+      command.add(goal.connection);
     }
   }
 
@@ -94,5 +91,4 @@ public class CommandLineGenerator {
   public List<String> getCommand() {
     return command;
   }
-
 }

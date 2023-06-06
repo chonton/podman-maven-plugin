@@ -70,17 +70,17 @@ the **package** phase. This goal executes `podman build` with the proper paramet
 
 ### Configuration
 
-|         Parameter | Required | Description                                                                      |
-|------------------:|:--------:|:---------------------------------------------------------------------------------|
-|    buildArguments |          | Map of build arguments                                                           |
-|     containerfile |    ✓     | Instruction file relative to contextDir, default is *Containerfile*)             |
-|        contextDir |    ✓     | Directory with build content, default is *${project.build.directory}/contextDir* |
-|             image |    ✓     | Fully qualified image name; must include registry/repository:version             |
-|   loadDockerCache |          | If set to true, load the local docker image cache with resulting image           |
-|         platforms |          | List of platforms.  Each element may contain comma separated *os/arch*           |
-| remote.connection |          | Remote podman connection name                                                    |
-|        remote.url |          | Url of podman remote service                                                     |
-|              skip |          | Skip the build                                                                   |
+|       Parameter | Required | Description                                                                      |
+|----------------:|:--------:|:---------------------------------------------------------------------------------|
+|  buildArguments |          | Map of build arguments                                                           |
+|      connection |          | Remote podman connection name                                                    |
+|   containerfile |    ✓     | Instruction file relative to contextDir, default is *Containerfile*)             |
+|      contextDir |    ✓     | Directory with build content, default is *${project.build.directory}/contextDir* |
+|           image |    ✓     | Fully qualified image name; must include registry/repository:version             |
+| loadDockerCache |          | If set to true, load the local docker image cache with resulting image           |
+|       platforms |          | List of platforms.  Each element may contain comma separated *os/arch*           |
+|            skip |          | Skip the build                                                                   |
+|             url |          | Url of podman remote service                                                     |
 
 ## Login Goal
 
@@ -99,14 +99,14 @@ element with an `<id>` element that matches the registry. If found, the `<userna
 
 ### Configuration from pom.xml
 
-|         Parameter | Required | Description                                            |
-|------------------:|:--------:|:-------------------------------------------------------|
-|          registry |    ✓     | Registry to authenticate with                          |
-|          password |          | If registry not found in settings.xml, use as password |
-| remote.connection |          | Remote podman connection name                          |
-|        remote.url |          | Url of podman remote service                           |
-|              skip |          | Skip login                                             |
-|          username |          | If registry not found in settings.xml, use as username |
+|  Parameter | Required | Description                                            |
+|-----------:|:--------:|:-------------------------------------------------------|
+| connection |          | Remote podman connection name                          |
+|   registry |    ✓     | Registry to authenticate with                          |
+|   password |          | If registry not found in settings.xml, use as password |
+|       skip |          | Skip login                                             |
+|   username |          | If registry not found in settings.xml, use as username |
+|        url |          | Url of podman remote service                           |
 
 ## Push Goal
 
@@ -115,12 +115,12 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
 
 ### Configuration
 
-|         Parameter | Required | Description                                                      |
-|------------------:|:--------:|:-----------------------------------------------------------------|
-|             image |    ✓     | The fully qualified image name, with registry/repository:version |
-| remote.connection |          | Remote podman connection name                                    |
-|        remote.url |          | Url of podman remote service                                     |
-|              skip |          | Skip push                                                        |
+|  Parameter | Required | Description                                                      |
+|-----------:|:--------:|:-----------------------------------------------------------------|
+| connection |          | Remote podman connection name                                    |
+|      image |    ✓     | The fully qualified image name, with registry/repository:version |
+|       skip |          | Skip push                                                        |
+|        url |          | Url of podman remote service                                     |
 
 # Examples
 
@@ -168,10 +168,8 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
         <platforms>
           <platform>${build.platforms}</platform>
         </platforms>
-        <remote>
-          <!-- set this value elsewhere, maybe jenkins starts a server process -->
-          <url>${podman.url}</url>
-        </remote>
+        <!-- set this value elsewhere, maybe jenkins starts a server process -->
+        <url>${podman.url}</url>
       </configuration>
     </plugin>
   </plugins>

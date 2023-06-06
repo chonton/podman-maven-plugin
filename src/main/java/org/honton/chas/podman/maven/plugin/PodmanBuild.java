@@ -11,51 +11,33 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-/**
- * Create a container image from the Containerfile directions and files from context
- */
+/** Create a container image from the Containerfile directions and files from context */
 @Mojo(name = "build", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
 public class PodmanBuild extends PodmanGoal {
 
-  /**
-   * Directory containing source content for build
-   */
+  /** Directory containing source content for build */
   @Parameter(required = true, defaultValue = "${project.build.directory}/contextDir")
   File contextDir;
 
-  /**
-   * Build instruction file, relative to contextDir
-   */
+  /** Build instruction file, relative to contextDir */
   @Parameter(required = true, defaultValue = "Containerfile")
   String containerfile;
 
-  /**
-   * Map of build arguments
-   */
-  @Parameter
-  Map<String, String> buildArguments;
+  /** Map of build arguments */
+  @Parameter Map<String, String> buildArguments;
 
-  /**
-   * The image name
-   */
+  /** The image name */
   @Parameter(required = true)
   String image;
 
-  /**
-   * The os/arch of the built image(s)
-   */
-  @Parameter
-  List<String> platforms;
+  /** The os/arch of the built image(s) */
+  @Parameter List<String> platforms;
 
-  /**
-   * Load resulting image into docker image cache
-   */
+  /** Load resulting image into docker image cache */
   @Parameter(defaultValue = "false")
   boolean loadDockerCache;
 
-  /**
-   * image tar
-   */
+  /** image tar */
   @Parameter(
       required = true,
       readonly = true,
@@ -63,13 +45,13 @@ public class PodmanBuild extends PodmanGoal {
   File dockerImageTar;
 
   protected final void doExecute() throws IOException, MojoExecutionException {
-    executeCommand(new CommandLineGenerator(remote)
-        .addCmd("build")
-        .addArgs(buildArguments)
-        .addPlatformAndImage(platforms, image)
-        .addContainerfile(containerfile)
-        .addContext(pwd.relativize(contextDir.toPath()))
-    );
+    executeCommand(
+        new CommandLineGenerator(this)
+            .addCmd("build")
+            .addArgs(buildArguments)
+            .addPlatformAndImage(platforms, image)
+            .addContainerfile(containerfile)
+            .addContext(pwd.relativize(contextDir.toPath())));
 
     if (loadDockerCache) {
       loadImage();
@@ -81,12 +63,12 @@ public class PodmanBuild extends PodmanGoal {
     Files.createDirectories(path.getParent());
     String tarLocation = pwd.relativize(path).toString();
 
-    executeCommand(new CommandLineGenerator(remote)
-        .addCmd("save")
-        .addParameter("--output")
-        .addParameter(tarLocation)
-        .addParameter(image)
-    );
+    executeCommand(
+        new CommandLineGenerator(this)
+            .addCmd("save")
+            .addParameter("--output")
+            .addParameter(tarLocation)
+            .addParameter(image));
 
     executeCommand(List.of("docker", "load", "-i", tarLocation), null);
   }

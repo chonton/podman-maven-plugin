@@ -19,9 +19,6 @@ public class PodmanPush extends PodmanGoal {
   String image;
 
   protected final void doExecute() throws IOException, MojoExecutionException {
-    CommandLineGenerator generator = new CommandLineGenerator(remote);
-    generator.addCmd("push");
-    generator.addParameter(image);
-    executeCommand(generator);
+    executeCommand(new CommandLineGenerator(this).addCmd("push").addParameter(image));
   }
 }

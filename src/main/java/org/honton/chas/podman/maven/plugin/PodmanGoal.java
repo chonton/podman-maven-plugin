@@ -27,9 +27,11 @@ public abstract class PodmanGoal extends AbstractMojo {
   @Parameter(property = "podman.skip", defaultValue = "false")
   boolean skip;
 
-  /** Remote podman instance */
-  @Parameter(property = "remote")
-  RemoteInfo remote;
+  /** Url of podman remote service */
+  @Parameter public String url;
+
+  /** Remote podman connection name */
+  @Parameter public String connection;
 
   // work variables ...
   Path pwd; // current working directory

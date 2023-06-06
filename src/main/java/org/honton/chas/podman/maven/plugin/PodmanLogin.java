@@ -23,23 +23,15 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 @Mojo(name = "login", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
 public class PodmanLogin extends PodmanGoal {
 
-  /**
-   * Registry location; used to look up the credentials in settings.xml and locate the registry
-   */
+  /** Registry location; used to look up the credentials in settings.xml and locate the registry */
   @Parameter(required = true)
   String registry;
 
-  /**
-   * The username for the registry if no entry in settings.xml matches registry name
-   */
-  @Parameter
-  String username;
+  /** The username for the registry if no entry in settings.xml matches registry name */
+  @Parameter String username;
 
-  /**
-   * The password for the registry if no entry in settings.xml matches registry name
-   */
-  @Parameter
-  String password;
+  /** The password for the registry if no entry in settings.xml matches registry name */
+  @Parameter String password;
 
   @Component(
       role = org.sonatype.plexus.components.sec.dispatcher.SecDispatcher.class,
@@ -51,13 +43,14 @@ public class PodmanLogin extends PodmanGoal {
 
   protected final void doExecute() throws IOException, MojoExecutionException {
     Server server = getAuthInfo();
-    List<String> command = new CommandLineGenerator(remote)
-        .addCmd("login")
-        .addParameter("--username")
-        .addParameter(server.getUsername())
-        .addParameter("--password-stdin")
-        .addParameter(registry)
-        .getCommand();
+    List<String> command =
+        new CommandLineGenerator(this)
+            .addCmd("login")
+            .addParameter("--username")
+            .addParameter(server.getUsername())
+            .addParameter("--password-stdin")
+            .addParameter(registry)
+            .getCommand();
     executeCommand(command, server.getPassword());
   }
 
@@ -71,8 +64,8 @@ public class PodmanLogin extends PodmanGoal {
 
     if (ensure(server::getPassword, server::setPassword, password)) {
       if (securityDispatcher instanceof DefaultSecDispatcher) {
-        ((DefaultSecDispatcher) securityDispatcher).setConfigurationFile(
-            "~/.m2/settings-security.xml");
+        ((DefaultSecDispatcher) securityDispatcher)
+            .setConfigurationFile("~/.m2/settings-security.xml");
       }
       try {
         server.setPassword(securityDispatcher.decrypt(server.getPassword()));
@@ -87,8 +80,8 @@ public class PodmanLogin extends PodmanGoal {
   /**
    * ensure pojo value is set
    *
-   * @param getter   Supplier of pojo value
-   * @param setter   Pojo consumer of value
+   * @param getter Supplier of pojo value
+   * @param setter Pojo consumer of value
    * @param fallback value to set if pojo value is null
    * @return true if pojo was non-null value
    * @throws MojoExecutionException when pojo value and fallback both null
