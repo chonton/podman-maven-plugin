@@ -18,7 +18,7 @@ import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
 /**
  * Set credentials for use when pushing to (or pulling from) registry.
  *
- * @since 0.0.2
+ * @since 0.0.3
  */
 @Mojo(name = "login", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
 public class PodmanLogin extends PodmanGoal {

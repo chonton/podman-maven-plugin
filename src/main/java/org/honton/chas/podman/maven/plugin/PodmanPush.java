@@ -9,7 +9,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 /**
  * Push image to registry
  *
- * @since 0.0.2
+ * @since 0.0.3
  */
 @Mojo(name = "push", defaultPhase = LifecyclePhase.DEPLOY, threadSafe = true)
 public class PodmanPush extends PodmanGoal {

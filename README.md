@@ -139,7 +139,7 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>podman-maven-plugin</artifactId>
-        <version>0.0.2</version>
+        <version>0.0.3</version>
       </plugin>
     </plugins>
   </pluginManagement>
