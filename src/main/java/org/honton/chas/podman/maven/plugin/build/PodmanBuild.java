@@ -1,4 +1,4 @@
-package org.honton.chas.podman.maven.plugin;
+package org.honton.chas.podman.maven.plugin.build;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.honton.chas.podman.maven.plugin.PodmanGoal;
+import org.honton.chas.podman.maven.plugin.cmdline.BuildCommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 
 /** Create a container image from the Containerfile directions and files from context */
 @Mojo(name = "build", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
@@ -46,8 +49,7 @@ public class PodmanBuild extends PodmanGoal {
 
   protected final void doExecute() throws IOException, MojoExecutionException {
     executeCommand(
-        new CommandLineGenerator(this)
-            .addCmd("build")
+        new BuildCommandLine(this)
             .addArgs(buildArguments)
             .addPlatformAndImage(platforms, image)
             .addContainerfile(containerfile)
@@ -64,12 +66,12 @@ public class PodmanBuild extends PodmanGoal {
     String tarLocation = pwd.relativize(path).toString();
 
     executeCommand(
-        new CommandLineGenerator(this)
+        new CommandLine(this)
             .addCmd("save")
             .addParameter("--output")
             .addParameter(tarLocation)
             .addParameter(image));
 
-    executeCommand(List.of("docker", "load", "-i", tarLocation), null);
+    executeCommand(List.of("docker", "load", "-i", tarLocation));
   }
 }

@@ -1,4 +1,4 @@
-package org.honton.chas.podman.maven.plugin;
+package org.honton.chas.podman.maven.plugin.containerfile;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +12,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.honton.chas.podman.maven.plugin.config.LayerConfig;
+import org.honton.chas.podman.maven.plugin.config.ShellOrExecConfig;
 
 /** Create a Containerfile. */
 @Mojo(name = "containerfile", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
@@ -22,13 +24,13 @@ public class CreateContainerfile extends AbstractMojo {
   String from;
 
   /** Default command / parameters for the executing container */
-  @Parameter ShellOrExec cmd;
+  @Parameter ShellOrExecConfig cmd;
 
   /** Command that the container executes */
-  @Parameter ShellOrExec entrypoint;
+  @Parameter ShellOrExecConfig entrypoint;
 
   /** File layers to copy from the context into the image file system */
-  @Parameter List<Layer> layers;
+  @Parameter List<LayerConfig> layers;
 
   /** Label to be applied to image */
   @Parameter Map<String, String> labels;
@@ -110,19 +112,19 @@ public class CreateContainerfile extends AbstractMojo {
     Files.writeString(destFilePath, sb, StandardCharsets.UTF_8);
   }
 
-  private void writeShellOrExec(StringBuilder sb, String directive, ShellOrExec shellOrExec) {
+  private void writeShellOrExec(StringBuilder sb, String directive, ShellOrExecConfig shellOrExec) {
     sb.append(directive);
     if (shellOrExec.exec != null) {
       sb.append('[');
       shellOrExec.exec.forEach(e -> sb.append('"').append(e).append("\","));
       sb.setCharAt(sb.length() - 1, ']');
-    } else {
+    } else if (shellOrExec.shell != null) {
       sb.append(shellOrExec.shell);
     }
     sb.append('\n');
   }
 
-  private void writeLayer(StringBuilder sb, Layer layer) {
+  private void writeLayer(StringBuilder sb, LayerConfig layer) {
     sb.append("COPY ");
     if (layer.chmod != null) {
       sb.append("--chmod=").append(layer.chmod).append(' ');

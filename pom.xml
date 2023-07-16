@@ -6,7 +6,7 @@
 
   <groupId>org.honton.chas</groupId>
   <artifactId>podman-maven-plugin</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <packaging>maven-plugin</packaging>
 
   <name>Podman Maven Plugin</name>
@@ -18,7 +18,7 @@
   <licenses>
     <license>
       <name>Apache-2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -63,6 +63,7 @@
   <properties>
     <git-code-format-maven-plugin.version>4.2</git-code-format-maven-plugin.version>
     <javadoc-plugin.version>3.5.0</javadoc-plugin.version>
+    <lombok.version>1.18.26</lombok.version>
 
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
@@ -72,8 +73,8 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <!-- use com.github.github:site-maven-plugin instead of org.apache.maven.plugins:maven-site-plugin -->
     <maven.site.deploy.skip>true</maven.site.deploy.skip>
+    <maven.version>3.6.3</maven.version>
 
-    <maven.version>3.3.9</maven.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -103,20 +104,8 @@
 
     </dependencies>
   </dependencyManagement>
+
   <dependencies>
-
-    <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-client</artifactId>
-      <version>6.6.2</version>
-      <scope>runtime</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>kubernetes-client-api</artifactId>
-      <version>6.6.2</version>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -161,6 +150,13 @@
       <artifactId>junit-jupiter</artifactId>
       <version>5.9.3</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
@@ -219,7 +215,7 @@
 
         <plugin>
           <artifactId>maven-invoker-plugin</artifactId>
-          <version>3.5.1</version>
+          <version>3.6.0</version>
         </plugin>
 
         <plugin>
@@ -251,6 +247,11 @@
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
           <version>3.3.1</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <version>3.2.1</version>
         </plugin>
 
         <plugin>
@@ -303,12 +304,12 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(java\.util\.)?List&lt;(org\.honton\.chas\.podman\.maven\.plugin\.)?Layer&gt;</code>]]></findRegex>
+              <findRegex><![CDATA[<code>(java\.util\.)?List&lt;([a-z]+\.)+([A-Z][a-z]+Config)&gt;</code>]]></findRegex>
               <replaceValue><![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/Layer.html">Layer</a>&gt;</code>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
-            <id>RemoteInfo</id>
+            <id>Config</id>
             <goals>
               <goal>find-and-replace</goal>
             </goals>
@@ -317,12 +318,12 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?RemoteInfo</code>]]></findRegex>
-              <replaceValue><![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/RemoteInfo.html">RemoteInfo</a></code>]]></replaceValue>
+              <findRegex><![CDATA[org\.honton\.chas\.podman\.maven\.plugin\.config\.(\p{L}+)Config]]></findRegex>
+              <replaceValue><![CDATA[<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/$1Config.html">$1Config</a>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
-            <id>ShellOrExec</id>
+            <id>JRE</id>
             <goals>
               <goal>find-and-replace</goal>
             </goals>
@@ -331,8 +332,8 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(org\.honton\.chas\.podman\.maven\.plugin\.)?ShellOrExec</code>]]></findRegex>
-              <replaceValue><![CDATA[<code><a href="./apidocs/org/honton/chas/podman/maven/plugin/ShellOrExec.html">ShellOrExec</a></code>]]></replaceValue>
+              <findRegex><![CDATA[java\.(util|lang)\.(\p{L}+)]]></findRegex>
+              <replaceValue><![CDATA[$2]]></replaceValue>
             </configuration>
           </execution>
         </executions>
@@ -407,6 +408,43 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.21.0</version>
+        <configuration>
+          <compileSourceRoots>src/main/java</compileSourceRoots>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>cpd-check</goal>
+              <goal>check</goal>
+            </goals>
+            <phase>process-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- publish site to github,
+      1. mvn [clean install] site-deploy
+      -->
+      <plugin>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <content>target/site</content>
+          <scmBranch>gh-pages</scmBranch>
+          <tryUpdate>true</tryUpdate>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+            <phase>site-deploy</phase>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
@@ -416,6 +454,14 @@
       <plugin>
       <artifactId>maven-javadoc-plugin</artifactId>
       <version>3.5.0</version>
+        <reportSets>
+          <reportSet>
+            <id>default</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
       </plugin>
 
       <plugin>
@@ -435,9 +481,7 @@
               <report>team</report>
               <report>licenses</report>
               <report>dependency-info</report>
-              <report>dependency-management</report>
               <report>distribution-management</report>
-              <report>plugin-management</report>
               <report>ci-management</report>
               <report>scm</report>
               <report>summary</report>

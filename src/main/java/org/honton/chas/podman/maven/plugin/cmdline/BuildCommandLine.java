@@ -1,41 +1,20 @@
-package org.honton.chas.podman.maven.plugin;
+package org.honton.chas.podman.maven.plugin.cmdline;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.honton.chas.podman.maven.plugin.build.PodmanBuild;
 
-public class CommandLineGenerator {
-  private final List<String> command;
-
-  public CommandLineGenerator(PodmanGoal goal) {
-    command = new ArrayList<>();
-    command.add("podman");
-
-    if (goal.url != null) {
-      command.add("--url");
-      command.add(goal.url);
-    }
-    if (goal.connection != null) {
-      command.add("--connection");
-      command.add(goal.connection);
-    }
+public class BuildCommandLine extends CommandLine {
+  public BuildCommandLine(PodmanBuild goal) {
+    super(goal);
+    addCmd("build");
   }
 
-  public CommandLineGenerator addCmd(String cmd) {
-    command.add(cmd);
-    return this;
-  }
-
-  public CommandLineGenerator addParameter(String parameter) {
-    command.add(parameter);
-    return this;
-  }
-
-  public CommandLineGenerator addArgs(Map<String, String> buildArguments) {
+  public BuildCommandLine addArgs(Map<String, String> buildArguments) {
     if (buildArguments != null) {
       buildArguments.forEach(
           (k, v) -> {
@@ -65,7 +44,7 @@ public class CommandLineGenerator {
     return false;
   }
 
-  public CommandLineGenerator addPlatformAndImage(List<String> platforms, String image) {
+  public BuildCommandLine addPlatformAndImage(List<String> platforms, String image) {
     if (addPlatforms(platforms)) {
       command.add("--manifest");
     } else {
@@ -75,7 +54,7 @@ public class CommandLineGenerator {
     return this;
   }
 
-  public CommandLineGenerator addContainerfile(String containerfile) {
+  public BuildCommandLine addContainerfile(String containerfile) {
     if (!"Containerfile".equals(containerfile)) {
       command.add("--file");
       command.add(containerfile);
@@ -83,12 +62,8 @@ public class CommandLineGenerator {
     return this;
   }
 
-  public CommandLineGenerator addContext(Path contextDir) {
+  public BuildCommandLine addContext(Path contextDir) {
     command.add("./" + contextDir.toString());
     return this;
-  }
-
-  public List<String> getCommand() {
-    return command;
   }
 }

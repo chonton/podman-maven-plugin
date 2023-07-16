@@ -1,27 +1,35 @@
 package org.honton.chas.podman.maven.plugin;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.SneakyThrows;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 
 /** podman goal base functionality */
 public abstract class PodmanGoal extends AbstractMojo {
 
   private static final Pattern WARNING =
       Pattern.compile("\\[?(warning)]?:? ?(.+)", Pattern.CASE_INSENSITIVE);
+
+  private static final Pattern ERROR =
+      Pattern.compile("\\[?(error)]?:? ?(.+)", Pattern.CASE_INSENSITIVE);
 
   /** Skip upgrade */
   @Parameter(property = "podman.skip", defaultValue = "false")
@@ -34,7 +42,9 @@ public abstract class PodmanGoal extends AbstractMojo {
   @Parameter public String connection;
 
   // work variables ...
-  Path pwd; // current working directory
+  protected Path pwd; // current working directory
+  protected StringBuilder errorOutput;
+  private AtomicReference<ExecutorService> executor = new AtomicReference<>();
 
   public final void execute() throws MojoFailureException, MojoExecutionException {
     if (skip) {
@@ -49,51 +59,130 @@ public abstract class PodmanGoal extends AbstractMojo {
     }
   }
 
+  protected ExecutorService getExecutor() {
+    ExecutorService foo = executor.get();
+    if (foo == null) {
+      ExecutorService pool = Executors.newCachedThreadPool();
+      if (executor.compareAndSet(null, pool)) {
+        foo = pool;
+      } else {
+        foo = executor.get();
+      }
+    }
+    return foo;
+  }
+
   protected abstract void doExecute() throws MojoExecutionException, IOException;
 
-  void pumpLog(InputStream is, Consumer<String> lineConsumer) {
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-      reader.lines().forEach(lineConsumer);
+  void pumpLog(InputStream is, BiConsumer<Integer, String> lineConsumer) {
+    try (LineNumberReader reader =
+        new LineNumberReader(new InputStreamReader(is, StandardCharsets.UTF_8), 128)) {
+      for (; ; ) {
+        String line = reader.readLine();
+        if (line == null) {
+          break;
+        }
+        lineConsumer.accept(reader.getLineNumber(), line);
+      }
     } catch (IOException e) {
-      lineConsumer.accept(e.getMessage());
+      lineConsumer.accept(-1, e.getMessage());
     }
   }
 
-  void executeCommand(CommandLineGenerator generator) throws MojoExecutionException, IOException {
-    executeCommand(generator.getCommand(), null);
+  @SneakyThrows
+  private void throwException(int exitCode) {
+    if (exitCode != 0) {
+      throw new MojoExecutionException("podman exit value: " + exitCode);
+    }
   }
 
-  void executeCommand(List<String> command, String stdin)
-      throws MojoExecutionException, IOException {
-    getLog().info(String.join(" ", command));
-    Process process = new ProcessBuilder(command).start();
+  public void executeCommand(CommandLine generator) throws MojoExecutionException, IOException {
+    executeCommand(generator.getCommand());
+  }
 
-    ForkJoinPool pool = ForkJoinPool.commonPool();
-    pool.execute(() -> pumpLog(process.getInputStream(), getLog()::info));
-    pool.execute(() -> pumpLog(process.getErrorStream(), this::errorLine));
+  protected void executeCommand(List<String> command) throws MojoExecutionException, IOException {
+    executeCommand(command, null);
+  }
+
+  protected void executeCommand(List<String> command, String stdin)
+      throws MojoExecutionException, IOException {
+    executeCommand(command, stdin, this::infoLine, this::errorLine, this::throwException);
+  }
+
+  protected void createProcess(CommandLine generator, BiConsumer<Integer, String> filter)
+      throws IOException {
+    createProcess(generator.getCommand(), null, filter, filter);
+  }
+
+  protected void executeCommand(CommandLine generator, IntConsumer exitCode)
+      throws MojoExecutionException, IOException {
+    executeCommand(generator.getCommand(), null, this::infoLine, this::errorLine, exitCode);
+  }
+
+  protected void executeCommand(
+      List<String> command,
+      String stdin,
+      BiConsumer<Integer, String> stdout,
+      BiConsumer<Integer, String> stderr,
+      IntConsumer exitCode)
+      throws MojoExecutionException, IOException {
+    waitForProcess(exitCode, createProcess(command, stdin, stdout, stderr));
+  }
+
+  protected Process createProcess(
+      List<String> command,
+      String stdin,
+      BiConsumer<Integer, String> stdout,
+      BiConsumer<Integer, String> stderr)
+      throws IOException {
+    getLog().info(String.join(" ", command));
+    errorOutput = new StringBuilder();
+
+    ExecutorService pool = getExecutor();
+    Process process = new ProcessBuilder(command).start();
+    pool.execute(() -> pumpLog(process.getInputStream(), stdout));
+    pool.execute(() -> pumpLog(process.getErrorStream(), stderr));
 
     OutputStream os = process.getOutputStream();
     if (stdin != null) {
       os.write(stdin.getBytes(StandardCharsets.UTF_8));
     }
     os.close();
+    return process;
+  }
 
+  private void waitForProcess(IntConsumer exitCode, Process process) throws MojoExecutionException {
     try {
-      if (process.waitFor() != 0) {
-        throw new MojoExecutionException("podman exit value: " + process.exitValue());
-      }
+      exitCode.accept(process.waitFor());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new MojoExecutionException(e.getMessage(), e);
     }
   }
 
-  private void errorLine(String s) {
-    Matcher warning = WARNING.matcher(s);
+  private void infoLine(Integer lineNo, String lineText) {
+    if (getLog().isDebugEnabled()) {
+      lineText = lineNo + ':' + lineText;
+    }
+    getLog().info(lineText);
+  }
+
+  private void errorLine(Integer lineNo, String lineText) {
+    errorOutput.append(lineText);
+
+    Matcher warning = WARNING.matcher(lineText);
     if (warning.matches()) {
       getLog().warn(warning.group(2));
     } else {
-      getLog().info(s);
+      Matcher error = ERROR.matcher(lineText);
+      if (error.matches()) {
+        getLog().error(error.group(2));
+      } else {
+        if (getLog().isDebugEnabled()) {
+          lineText = lineNo + ':' + lineText;
+        }
+        getLog().info(lineText);
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-package org.honton.chas.podman.maven.plugin;
+package org.honton.chas.podman.maven.plugin.login;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,6 +11,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.honton.chas.podman.maven.plugin.PodmanGoal;
+import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
@@ -33,9 +35,7 @@ public class PodmanLogin extends PodmanGoal {
   /** The password for the registry if no entry in settings.xml matches registry name */
   @Parameter String password;
 
-  @Component(
-      role = org.sonatype.plexus.components.sec.dispatcher.SecDispatcher.class,
-      hint = "default")
+  @Component(role = SecDispatcher.class, hint = "default")
   private SecDispatcher securityDispatcher;
 
   @Parameter(defaultValue = "${settings}", required = true, readonly = true)
@@ -44,7 +44,7 @@ public class PodmanLogin extends PodmanGoal {
   protected final void doExecute() throws IOException, MojoExecutionException {
     Server server = getAuthInfo();
     List<String> command =
-        new CommandLineGenerator(this)
+        new CommandLine(this)
             .addCmd("login")
             .addParameter("--username")
             .addParameter(server.getUsername())

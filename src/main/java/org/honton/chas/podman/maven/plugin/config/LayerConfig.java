@@ -1,15 +1,17 @@
-package org.honton.chas.podman.maven.plugin;
+package org.honton.chas.podman.maven.plugin.config;
 
 import java.util.List;
+import lombok.ToString;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /** Layer of files in the image */
-public class Layer {
+@ToString
+public class LayerConfig {
   /** Owner:Group of the files in the image */
-  public String chown;
+  @Parameter public String chown;
 
   /** Permissions of the files in the image */
-  public String chmod;
+  @Parameter public String chmod;
 
   /** Files relative to the context to be copied. (golang wildcards supported) */
   @Parameter(required = true)

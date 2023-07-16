@@ -1,11 +1,13 @@
 # podman-maven-plugin
 
-Use podman to build and push images. This plugin has four goals:
+Use podman to build and push images. This plugin has six goals:
 
 1. Create Containerfile from base image and copy directives
 2. Build image from Containerfile and context
 3. Login to registry
 4. Push image to registry
+5. Run image in container
+6. Remove container
 
 # Rationale
 
@@ -13,10 +15,10 @@ Build container images with [podman](https://docs.podman.io/en/latest/markdown/p
 
 Deploy your containers to [docker desktop](https://docs.docker.com/desktop/kubernetes/) or
 [minikube](https://minikube.sigs.k8s.io/docs/) for integration testing using
-[helmrepo](https://github.com/chonton/helmrepo-maven-plugin).
-Start k8s pods/deployments/services during **pre-integration-test** phase. Use
+[helmrepo](https://github.com/chonton/helmrepo-maven-plugin). Or, use this plugin's `run` goal to start loose container.
+Start k8s pods/deployments/services or podman containers during **pre-integration-test** phase. Use
 [failsafe](https://maven.apache.org/surefire/maven-failsafe-plugin/) to run integration tests during
-**integration-test** phase. Capture logs and uninstall k8s pods/deployments/services during the
+**integration-test** phase. Capture logs and uninstall k8s pods/deployments/services or container during the
 **post-integration-test** phase.
 
 # Plugin
@@ -122,6 +124,149 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
 |       skip |          | Skip push                                                        |
 |        url |          | Url of podman remote service                                     |
 
+## Container-Run Goal
+
+The [container-run](https://chonton.github.io/podman-maven-plugin/container-run-mojo.html) goal binds by default to
+the **pre-integration-test** phase. This goal uses `podman network rm` to create a network, `podman container run`
+to launch containers, and `podman logs` to capture the containers` output.
+
+After launching, the goal will wait for the container to become healthy based upon the `wait` configuration. When
+launching multiple containers, the container ordering is determined by the `requires` parameter.  The `logs`
+configuration instructs the goal to collect container logs until the container is removed or maven exits.
+
+### Configuration
+
+|  Parameter | Required | Description                                         |
+|-----------:|:--------:|:----------------------------------------------------|
+| connection |          | Remote podman connection name                       |
+| containers |    ✓     | Map of container aliases to container configuration |
+|    network |          | Network configuration                               |
+|       skip |          | Skip container run                                  |
+|        url |          | Url of podman remote service                        |
+
+### Network Configuration
+
+| Parameter | Required | Description                                  |
+|----------:|:--------:|:---------------------------------------------|
+|      name |          | Name of network.  Defaults to `artifactId`   |
+|    driver |          | Network driver name.  Defaults to **bridge** |
+
+### Container Configuration
+
+|  Parameter | Required | Description                                                            |
+|-----------:|:--------:|:-----------------------------------------------------------------------|
+|       name |          | Name of the container. Defaults to container's alias                   |
+|   requires |          | Comma separated dependent container names                              |
+|      image |    ✓     | Fully qualified image name to run                                      |
+|       wait |          | Post launch wait configuration                                         |
+|        log |          | Post launch logging configuration                                      |
+|     memory |          | Memory limit.                                                          |
+|     memory |          | Memory plus swap limit.                                                |
+|        cmd |          | Override image command to execute                                      |
+|       args |          | Override image arguments for command                                   |
+| entrypoint |          | Override image entrypoint                                              |
+|    envFile |          | File containing environment variables that are set when container runs |
+|        env |          | Map of environment variables that are set when container runs          |
+|     mounts |          | Volume mappings                                                        |
+|      ports |          | Map of host ports to container ports.                                  |
+
+#### Memory Limits
+Memory limit must be a number followed by unit of 'b' (bytes), 'k' (kibibytes), 'm' (mebibytes), or 'g' (gibibytes)
+
+#### Mounts Configuration
+
+| Parameter | Required | Description         |
+|----------:|:--------:|:--------------------|
+|     binds |          | List of BindMount   |
+|     temps |          | List of TempFs      |
+|   volumes |          | List of VolumeMount |
+
+#### BindMount Configuration
+
+|   Parameter | Required | Description                                |
+|------------:|:--------:|:-------------------------------------------|
+|      source |    ✓     | Absolute path of host directory            |
+| destination |    ✓     | Absolute path of container directory       |
+|    readonly |          | Defaults to false                          |
+| permissions |          | Permissions of directories created on host |
+
+##### Host Directory
+
+Bind mounts will create the directory on the host if it does not exist.  The file system permissions may be defined 
+using [Symbolic](https://en.wikipedia.org/wiki/File-system_permissions#Symbolic_notation) or 
+[Numeric](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) notation.
+
+#### TempFs Configuration
+
+|   Parameter | Required | Description                                |
+|------------:|:--------:|:-------------------------------------------|
+| destination |    ✓     | Absolute path of container directory       |
+
+#### BindMount Configuration
+
+|   Parameter | Required | Description                                |
+|------------:|:--------:|:-------------------------------------------|
+|      source |    ✓     | Volume name                                |
+| destination |    ✓     | Absolute path of container directory       |
+|    readonly |          | Defaults to false                          |
+
+#### Ports Map
+Key is the name of a maven property. If property is set, then that value is used as host the \[interface:]port;
+otherwise the property is set to the value of the dynamically assigned host port. Each entry is the value of an exposed
+container port.
+
+#### Log Configuration
+
+|  Parameter | Required | Description                                                                     |
+|-----------:|:--------:|:--------------------------------------------------------------------------------|
+|       file |          | Name of file to receive logs. Defaults to `target/podman/<container alias>.log` |
+| timestamps |          | Display timestamp on each line. Defaults to false.                              |
+
+#### Wait Configuration
+
+| Parameter | Required | Description                                    |
+|----------:|:--------:|:-----------------------------------------------|
+|      http |          | Http probe options                             |
+|       log |          | String to detect in container log.             |
+|      time |          | Seconds to wait before failing. Default is 60. |
+
+#### HttpWait Configuration
+
+| Parameter | Required | Description                                        |
+|----------:|:--------:|:---------------------------------------------------|
+|       url |    ✓     | Url to invoke                                      |
+|    method |          | Http verb to use. Default is 'GET'.                |
+|    status |          | Expected status code. Default is 200.              |
+|  interval |          | Interval in seconds between probes. Default is 15. |
+
+## Container-Rm Goal
+
+The [container-rm](https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html) goal binds by default to the
+**post-integration-test** phase. This goal uses `podman container run` to delete containers and `podman network rm` to 
+delete the network.  The order of container deletion is reverse of the start order.
+
+### Configuration
+
+|  Parameter | Required | Description                                         |
+|-----------:|:--------:|:----------------------------------------------------|
+| connection |          | Remote podman connection name                       |
+| containers |    ✓     | Map of container aliases to container configuration |
+|    network |          | Network configuration                               |
+|       skip |          | Skip container rm                                   |
+|        url |          | Url of podman remote service                        |
+
+### Network Configuration
+
+| Parameter | Required | Description                                  |
+|----------:|:--------:|:---------------------------------------------|
+|      name |          | Name of network.  Defaults to `artifactId`   |
+
+### Container Configuration
+
+|  Parameter | Required | Description                                          |
+|-----------:|:--------:|:-----------------------------------------------------|
+|       name |          | Name of the container. Defaults to container's alias |
+
 # Examples
 
 ## Typical Use
@@ -139,7 +284,7 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>podman-maven-plugin</artifactId>
-        <version>0.0.3</version>
+        <version>0.0.4</version>
       </plugin>
     </plugins>
   </pluginManagement>
@@ -149,25 +294,79 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
       <groupId>org.honton.chas</groupId>
       <artifactId>podman-maven-plugin</artifactId>
       <executions>
+        
         <execution>
+          <id>build-java-based-container</id>
           <goals>
             <goal>containerfile</goal>
             <goal>build</goal>
             <goal>login</goal>
             <goal>push</goal>
           </goals>
+          <configuration>
+            <buildArguments combine.children="append">
+              <alpineBase>docker.io/library/alpine:3.18.0</alpineBase>
+            </buildArguments>
+            <contextDir>target/quarkus-app</contextDir>
+            <containerfile>src/image/Dockerfile</containerfile>
+            <image>corp.artifactory.xmple.com/dev-repo/${project.artifactId}:${project.version}</image>
+            <platforms>
+              <platform>${build.platforms}</platform>
+            </platforms>
+          </configuration>
+        </execution>
+        
+        <execution>
+          <id>integration-test</id>
+          <goals>
+            <goal>container-run</goal>
+            <goal>container-rm</goal>
+          </goals>
+          <configuration>
+            <containers>
+              <uat>
+                <image>corp.artifactory.xmple.com/dev-repo/${project.artifactId}:${project.version}</image>
+                <requires>s3</requires>
+                <log/>
+                <wait>
+                  <http>
+                    <url>http://localhost:9000/q/health/ready</url>
+                  </http>
+                </wait>
+                <mounts>
+                  <binds>
+                    <bind>
+                      <source>${project.build.testOutputDirectory}/service/data</source>
+                      <destination>/service/data</destination>
+                      <permissions>777</permissions>
+                    </bind>
+                  </binds>
+                </mounts>
+                <ports>
+                  <management.port>9000</management.port>
+                  <service.port>8080</service.port>
+                </ports>
+              </uat>
+              <s3>
+                <image>docker.io/adobe/s3mock:2.11.0</image>
+                <ports>
+                  <s3.port>9090</s3.port>
+                </ports>
+                <wait>
+                  <log>Jetty started on port</log>
+                  <time>20</time>
+                </wait>
+                <log/>
+                <env>
+                  <initialBuckets>exmple-cmpny-us-east-1</initialBuckets>
+                </env>
+              </s3>
+            </containers>
+          </configuration>
         </execution>
       </executions>
+      
       <configuration>
-        <buildArguments combine.children="append">
-          <alpineBase>docker.io/library/alpine:3.18.0</alpineBase>
-        </buildArguments>
-        <contextDir>target/quarkus-app</contextDir>
-        <containerfile>src/image/Dockerfile</containerfile>
-        <image>corp.artifactory.xmple.com/dev-repo/${project.artifactId}:${project.version}</image>
-        <platforms>
-          <platform>${build.platforms}</platform>
-        </platforms>
         <!-- set this value elsewhere, maybe jenkins starts a server process -->
         <url>${podman.url}</url>
       </configuration>
