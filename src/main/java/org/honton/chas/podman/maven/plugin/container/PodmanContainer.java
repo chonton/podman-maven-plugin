@@ -8,6 +8,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
+import org.honton.chas.podman.maven.plugin.config.DeviceMountConfig;
 import org.honton.chas.podman.maven.plugin.config.NetworkConfig;
 
 public abstract class PodmanContainer extends PodmanGoal {
@@ -16,6 +17,13 @@ public abstract class PodmanContainer extends PodmanGoal {
 
   /** Map of networks */
   @Parameter NetworkConfig network;
+
+  /**
+   * Device mappings
+   *
+   * @since 0.0.5
+   */
+  @Parameter public List<DeviceMountConfig> devices;
 
   // Current maven project
   @Parameter(defaultValue = "${project}", readonly = true)

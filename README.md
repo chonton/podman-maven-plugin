@@ -140,9 +140,20 @@ configuration instructs the goal to collect container logs until the container i
 |-----------:|:--------:|:----------------------------------------------------|
 | connection |          | Remote podman connection name                       |
 | containers |    ✓     | Map of container aliases to container configuration |
+|    devices |          | List of device configuration                        |
 |    network |          | Network configuration                               |
 |       skip |          | Skip container run                                  |
 |        url |          | Url of podman remote service                        |
+
+#### Device Configuration
+
+|   Parameter | Required | Description                                               |
+|------------:|:--------:|:----------------------------------------------------------|
+|      source |    ✓     | Absolute path of host device                              |
+| destination |          | Absolute path of container device. Defaults to host path. |
+|      mknode |          | Container allowed to mknod. Defaults to true              |
+|        read |          | Container allowed to read. Defaults to true               |
+|       write |          | Container allowed to write. Defaults to true              |
 
 ### Network Configuration
 
@@ -284,7 +295,7 @@ delete the network.  The order of container deletion is reverse of the start ord
       <plugin>
         <groupId>org.honton.chas</groupId>
         <artifactId>podman-maven-plugin</artifactId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
       </plugin>
     </plugins>
   </pluginManagement>

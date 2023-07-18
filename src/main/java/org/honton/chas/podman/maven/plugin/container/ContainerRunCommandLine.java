@@ -15,6 +15,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 import org.honton.chas.podman.maven.plugin.config.BindMountConfig;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
+import org.honton.chas.podman.maven.plugin.config.DeviceMountConfig;
 import org.honton.chas.podman.maven.plugin.config.TempFsMountConfig;
 import org.honton.chas.podman.maven.plugin.config.VolumeMountConfig;
 
@@ -95,6 +96,41 @@ class ContainerRunCommandLine extends CommandLine {
 
     if (containerConfig.env != null) {
       containerConfig.env.forEach((k, v) -> addParameter("--env").addParameter(k + '=' + v));
+    }
+    return this;
+  }
+
+  private static String getMountOptions(DeviceMountConfig config) {
+    StringBuilder options = new StringBuilder();
+    if (config.read != Boolean.FALSE) {
+      options.append("r");
+    }
+    if (config.write != Boolean.FALSE) {
+      options.append("w");
+    }
+    if (config.mknod != Boolean.FALSE) {
+      options.append("m");
+    }
+    return options.toString();
+  }
+
+  public ContainerRunCommandLine addDevices(List<DeviceMountConfig> devices) {
+    if (devices != null) {
+      for (DeviceMountConfig config : devices) {
+        StringBuilder sb = new StringBuilder().append(config.source);
+
+        if (config.destination != null && !config.destination.equals(config.source)) {
+          sb.append(':').append(config.destination);
+        }
+
+        String ops = getMountOptions(config);
+        boolean needOpts = !ops.equals("rwm");
+        if (needOpts) {
+          sb.append(':').append(ops);
+        }
+
+        addParameter("--device").addParameter(sb.toString());
+      }
     }
     return this;
   }

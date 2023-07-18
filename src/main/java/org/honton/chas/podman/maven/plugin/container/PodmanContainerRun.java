@@ -89,6 +89,7 @@ public class PodmanContainerRun extends PodmanContainer {
             .addContainerName()
             .addContainerOptions(networkName)
             .addEnvironment(getLog()::warn)
+            .addDevices(devices)
             .addMounts()
             .addPorts()
             .addContainerCmd());
