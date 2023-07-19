@@ -107,7 +107,7 @@
         </header>
         <main id="bodyColumn"  class="span10" >
 <h1>podman-maven-plugin</h1>
-<p>Use podman to build and push images. This plugin has six goals:</p>
+<p>Use podman to build, push, and run images. This plugin has six goals:</p>
 <ol style="list-style-type: decimal">
 
 <li>Create Containerfile from base image and copy directives</li>
@@ -118,14 +118,14 @@
 <li>Remove container</li>
 </ol>
 <h1>Rationale</h1>
-<p>Build container images with <a class="externalLink" href="https://docs.podman.io/en/latest/markdown/podman-build.1.html">podman</a>.</p>
-<p>Deploy your containers to <a class="externalLink" href="https://docs.docker.com/desktop/kubernetes/">docker desktop</a> or
-<a class="externalLink" href="https://minikube.sigs.k8s.io/docs/">minikube</a> for integration testing using
-<a class="externalLink" href="https://github.com/chonton/helmrepo-maven-plugin">helmrepo</a>. Or, use this plugin's <code>run</code> goal to start loose container.
-Start k8s pods/deployments/services or podman containers during <b>pre-integration-test</b> phase. Use
-<a class="externalLink" href="https://maven.apache.org/surefire/maven-failsafe-plugin/">failsafe</a> to run integration tests during
-<b>integration-test</b> phase. Capture logs and uninstall k8s pods/deployments/services or container during the
-<b>post-integration-test</b> phase.</p>
+<p>Build images using <a class="externalLink" href="https://docs.podman.io/en/latest/markdown/podman-build.1.html">podman</a> with this
+plugin's <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/containerfile-mojo.html">containerfile</a> and
+<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/build-mojo.html">build</a> goals.</p>
+<p>During the <b>integration-test</b> phase, deploy your containers using this plugin's
+<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-run-mojo.html">container-run</a> goal. Use
+<a class="externalLink" href="https://maven.apache.org/surefire/maven-failsafe-plugin/">failsafe</a> to run integration tests.
+During the <b>post-test</b> phase, undeploy your containers using this plugin's
+<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html">container-rm</a> goal.</p>
 <h1>Plugin</h1>
 <p>Plugin reports available at
 <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/plugin-info.html">plugin info</a>.</p><section>
@@ -365,12 +365,14 @@ the <b>deploy</b> phase. This goal uses <code>podman</code> to <code>push</code>
 </tbody>
 </table></section></section><section>
 <h2><a name="Container-Run_Goal"></a>Container-Run Goal</h2>
-<p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-run-mojo.html">container-run</a> goal binds by default to
-the <b>pre-integration-test</b> phase. This goal uses <code>podman network rm</code> to create a network, <code>podman container run</code>
-to launch containers, and <code>podman logs</code> to capture the containers` output.</p>
-<p>After launching, the goal will wait for the container to become healthy based upon the <code>wait</code> configuration. When
-launching multiple containers, the container ordering is determined by the <code>requires</code> parameter.  The <code>logs</code>
-configuration instructs the goal to collect container logs until the container is removed or maven exits.</p><section>
+<p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-run-mojo.html">container-run</a> goal
+binds by default to the <b>pre-integration-test</b> phase. This goal uses <code>podman network rm</code> to create
+a network, <code>podman container run</code> to launch containers, and <code>podman logs</code> to capture the containers`
+output.</p>
+<p>After launching, the goal will wait for the container to become healthy based upon the <code>wait</code>
+configuration. When launching multiple containers, the container ordering is determined by the
+<code>requires</code> parameter. The <code>logs</code> configuration instructs the goal to collect container logs until
+the container is removed or maven exits.</p><section>
 <h3><a name="Configuration"></a>Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
@@ -528,7 +530,8 @@ configuration instructs the goal to collect container logs until the container i
 </tbody>
 </table><section>
 <h4><a name="Memory_Limits"></a>Memory Limits</h4>
-<p>Memory limit must be a number followed by unit of &#x2018;b&#x2019; (bytes), &#x2018;k&#x2019; (kibibytes), &#x2018;m&#x2019; (mebibytes), or &#x2018;g&#x2019; (gibibytes)</p></section><section>
+<p>Memory limit must be a number followed by unit of &#x2018;b&#x2019; (bytes), &#x2018;k&#x2019; (kibibytes), &#x2018;m&#x2019; (mebibytes), or
+&#x2018;g&#x2019; (gibibytes).</p></section><section>
 <h4><a name="Mounts_Configuration"></a>Mounts Configuration</h4>
 <table border="0" class="table table-striped">
 <thead>
@@ -582,8 +585,9 @@ configuration instructs the goal to collect container logs until the container i
 </tbody>
 </table><section>
 <h5><a name="Host_Directory"></a>Host Directory</h5>
-<p>Bind mounts will create the directory on the host if it does not exist.  The file system permissions may be defined
-using <a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_permissions#Symbolic_notation">Symbolic</a> or
+<p>Bind mounts will create the directory on the host if it does not exist. The file system permissions
+may be defined using
+<a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_permissions#Symbolic_notation">Symbolic</a> or
 <a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation">Numeric</a> notation.</p></section></section><section>
 <h4><a name="TempFs_Configuration"></a>TempFs Configuration</h4>
 <table border="0" class="table table-striped">
@@ -626,9 +630,9 @@ using <a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_pe
 </tbody>
 </table></section><section>
 <h4><a name="Ports_Map"></a>Ports Map</h4>
-<p>Key is the name of a maven property. If property is set, then that value is used as host the [interface:]port;
-otherwise the property is set to the value of the dynamically assigned host port. Each entry is the value of an exposed
-container port.</p></section><section>
+<p>Key is the name of a maven property. If property is set, then that value is used as host the
+[interface:]port; otherwise the property is set to the value of the dynamically assigned host port.
+Each entry is the value of an exposed container port.</p></section><section>
 <h4><a name="Log_Configuration"></a>Log Configuration</h4>
 <table border="0" class="table table-striped">
 <thead>
@@ -702,9 +706,10 @@ container port.</p></section><section>
 </tbody>
 </table></section></section></section><section>
 <h2><a name="Container-Rm_Goal"></a>Container-Rm Goal</h2>
-<p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html">container-rm</a> goal binds by default to the
-<b>post-integration-test</b> phase. This goal uses <code>podman container run</code> to delete containers and <code>podman network rm</code> to
-delete the network.  The order of container deletion is reverse of the start order.</p><section>
+<p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html">container-rm</a> goal binds
+by default to the <b>post-integration-test</b> phase. This goal uses <code>podman container run</code> to delete
+containers and <code>podman network rm</code> to delete the network. The order of container deletion is the
+reverse of the start order.</p><section>
 <h3><a name="Configuration"></a>Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
@@ -794,7 +799,7 @@ delete the network.  The order of container deletion is reverse of the start ord
       &lt;groupId&gt;org.honton.chas&lt;/groupId&gt;
       &lt;artifactId&gt;podman-maven-plugin&lt;/artifactId&gt;
       &lt;executions&gt;
-        
+
         &lt;execution&gt;
           &lt;id&gt;build-java-based-container&lt;/id&gt;
           &lt;goals&gt;
@@ -809,13 +814,13 @@ delete the network.  The order of container deletion is reverse of the start ord
             &lt;/buildArguments&gt;
             &lt;contextDir&gt;target/quarkus-app&lt;/contextDir&gt;
             &lt;containerfile&gt;src/image/Dockerfile&lt;/containerfile&gt;
-            &lt;image&gt;corp.artifactory.xmple.com/dev-repo/${project.artifactId}:${project.version}&lt;/image&gt;
+            &lt;image&gt;artifactory.xmple.com/dev/${project.artifactId}:${project.version}&lt;/image&gt;
             &lt;platforms&gt;
               &lt;platform&gt;${build.platforms}&lt;/platform&gt;
             &lt;/platforms&gt;
           &lt;/configuration&gt;
         &lt;/execution&gt;
-        
+
         &lt;execution&gt;
           &lt;id&gt;integration-test&lt;/id&gt;
           &lt;goals&gt;
@@ -825,7 +830,7 @@ delete the network.  The order of container deletion is reverse of the start ord
           &lt;configuration&gt;
             &lt;containers&gt;
               &lt;uat&gt;
-                &lt;image&gt;corp.artifactory.xmple.com/dev-repo/${project.artifactId}:${project.version}&lt;/image&gt;
+                &lt;image&gt;artifactory.xmple.com/dev/${project.artifactId}:${project.version}&lt;/image&gt;
                 &lt;requires&gt;s3&lt;/requires&gt;
                 &lt;log/&gt;
                 &lt;wait&gt;
@@ -865,7 +870,7 @@ delete the network.  The order of container deletion is reverse of the start ord
           &lt;/configuration&gt;
         &lt;/execution&gt;
       &lt;/executions&gt;
-      
+
       &lt;configuration&gt;
         &lt;!-- set this value elsewhere, maybe jenkins starts a server process --&gt;
         &lt;url&gt;${podman.url}&lt;/url&gt;
