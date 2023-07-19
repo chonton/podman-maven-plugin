@@ -134,7 +134,7 @@ binds by default to the <b>prepare-package</b> phase.
 This goal creates <i>${project.build.directory}/contextDir/Containerfile</i> from the configuration.
 See <a class="externalLink" href="https://github.com/containers/common/blob/main/docs/Containerfile.5.md">Containerfile</a> for more
 information about Containerfile syntax.</p><section>
-<h3><a name="Configuration"></a>Configuration</h3>
+<h3><a name="Containerfile_Configuration"></a>Containerfile Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -289,7 +289,7 @@ the <b>package</b> phase. This goal executes <code>podman build</code> with the 
 <p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/login-mojo.html">login</a> goal binds by default to
 the <b>prepare-package</b> phase. This goal executes <code>podman login</code> with credentials from
 <b>settings.xml</b> or specified in the configuration.</p><section>
-<h3><a name="Configuration_from_settings.xml"></a>Configuration from settings.xml</h3>
+<h3><a name="Login_Configuration_from_settings.xml"></a>Login Configuration from settings.xml</h3>
 <p>Maven's <a class="externalLink" href="https://maven.apache.org/settings.html">settings.xml</a> contains items that are not specific
 to a project or that should not be distributed to artifact consumers. This plugin will read the
 <a class="externalLink" href="https://maven.apache.org/settings.html#servers">servers</a> element of settings.xml to find a server
