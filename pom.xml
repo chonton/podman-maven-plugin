@@ -295,20 +295,6 @@
         <version>1.1.0</version>
         <executions>
           <execution>
-            <id>Layer</id>
-            <goals>
-              <goal>find-and-replace</goal>
-            </goals>
-            <phase>site</phase>
-            <configuration>
-              <replacementType>file-contents</replacementType>
-              <baseDir>target/site/</baseDir>
-              <fileMask>.html</fileMask>
-              <findRegex><![CDATA[<code>(java\.util\.)?List&lt;([a-z]+\.)+([A-Z][a-z]+Config)&gt;</code>]]></findRegex>
-              <replaceValue><![CDATA[<code>List&lt;<a href="./apidocs/org/honton/chas/podman/maven/plugin/Layer.html">Layer</a>&gt;</code>]]></replaceValue>
-            </configuration>
-          </execution>
-          <execution>
             <id>Config</id>
             <goals>
               <goal>find-and-replace</goal>
@@ -318,8 +304,8 @@
               <replacementType>file-contents</replacementType>
               <baseDir>target/site/</baseDir>
               <fileMask>.html</fileMask>
-              <findRegex><![CDATA[org\.honton\.chas\.podman\.maven\.plugin\.config\.(\p{L}+)Config]]></findRegex>
-              <replaceValue><![CDATA[<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/$1Config.html">$1Config</a>]]></replaceValue>
+              <findRegex><![CDATA[(org\.honton\.chas\.podman\.maven\.plugin\.config\.)?(\p{L}+)Config]]></findRegex>
+              <replaceValue><![CDATA[<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/$2Config.html">$2Config</a>]]></replaceValue>
             </configuration>
           </execution>
           <execution>
