@@ -119,13 +119,12 @@
 </ol>
 <h1>Rationale</h1>
 <p>Build images using <a class="externalLink" href="https://docs.podman.io/en/latest/markdown/podman-build.1.html">podman</a> with this
-plugin's <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/containerfile-mojo.html">containerfile</a> and
-<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/build-mojo.html">build</a> goals.</p>
+plugin's <a href="#containerfile-goal">containerfile</a> and <a href="#build-goal">build</a> goals.</p>
 <p>During the <b>integration-test</b> phase, deploy your containers using this plugin's
-<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-run-mojo.html">container-run</a> goal. Use
+<a href="#container-run-goal">container-run</a> goal. Use
 <a class="externalLink" href="https://maven.apache.org/surefire/maven-failsafe-plugin/">failsafe</a> to run integration tests.
 During the <b>post-test</b> phase, undeploy your containers using this plugin's
-<a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html">container-rm</a> goal.</p>
+<a href="#container-rm-goal">container-rm</a> goal.</p>
 <h1>Plugin</h1>
 <p>Plugin reports available at
 <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/plugin-info.html">plugin info</a>.</p><section>
@@ -148,11 +147,11 @@ information about Containerfile syntax.</p><section>
 <tr class="b">
 <td align="left">cmd</td>
 <td align="center"> </td>
-<td align="left">Default command / parameters for the executing container</td></tr>
+<td align="left">Default <a href="#shellorexecconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ShellOrExecConfig.html">ShellOrExecConfig</a></a> command</td></tr>
 <tr class="a">
 <td align="left">entrypoint</td>
 <td align="center"> </td>
-<td align="left">Command that the container executes</td></tr>
+<td align="left">Default <a href="#shellorexecconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ShellOrExecConfig.html">ShellOrExecConfig</a></a> entrypoint</td></tr>
 <tr class="b">
 <td align="left">from</td>
 <td align="center">&#x2713;</td>
@@ -160,7 +159,7 @@ information about Containerfile syntax.</p><section>
 <tr class="a">
 <td align="left">layers</td>
 <td align="center"> </td>
-<td align="left">List of files to copy from the context into the image file system</td></tr>
+<td align="left">List of <a href="#layerconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LayerConfig.html">LayerConfig</a></a> to apply</td></tr>
 <tr class="b">
 <td align="left">labels</td>
 <td align="center"> </td>
@@ -180,14 +179,14 @@ information about Containerfile syntax.</p><section>
 <tr class="b">
 <td align="left">volumes</td>
 <td align="center"> </td>
-<td align="left">List of locations in the image filesystem where external mounts are expected</td></tr>
+<td align="left">List of locations in the image filesystem of external mounts</td></tr>
 <tr class="a">
 <td align="left">workDir</td>
 <td align="center"> </td>
 <td align="left">Working directory for the container's process</td></tr>
 </tbody>
 </table></section><section>
-<h3><a name="layer_attributes"></a>layer attributes</h3>
+<h3><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LayerConfig.html">LayerConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LayerConfig.html">LayerConfig</a></h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -215,7 +214,7 @@ information about Containerfile syntax.</p><section>
 <td align="left">Absolute destination in the image where files are copied</td></tr>
 </tbody>
 </table></section><section>
-<h3><a name="entrypoint_or_cmd_attributes"></a>entrypoint or cmd attributes</h3>
+<h3><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ShellOrExecConfig.html">ShellOrExecConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ShellOrExecConfig.html">ShellOrExecConfig</a></h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -238,7 +237,7 @@ information about Containerfile syntax.</p><section>
 <h2><a name="Build_Goal"></a>Build Goal</h2>
 <p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/build-mojo.html">build</a> goal binds by default to
 the <b>package</b> phase. This goal executes <code>podman build</code> with the proper parameters.</p><section>
-<h3><a name="Configuration"></a>Configuration</h3>
+<h3><a name="Build_Configuration"></a>Build Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -259,7 +258,7 @@ the <b>package</b> phase. This goal executes <code>podman build</code> with the 
 <tr class="b">
 <td align="left">containerfile</td>
 <td align="center">&#x2713;</td>
-<td align="left">Instruction file relative to contextDir, default is <i>Containerfile</i>)</td></tr>
+<td align="left">Instruction file relative to contextDir, default is <i>Containerfile</i></td></tr>
 <tr class="a">
 <td align="left">contextDir</td>
 <td align="center">&#x2713;</td>
@@ -267,7 +266,7 @@ the <b>package</b> phase. This goal executes <code>podman build</code> with the 
 <tr class="b">
 <td align="left">image</td>
 <td align="center">&#x2713;</td>
-<td align="left">Fully qualified image name; must include registry/repository:version</td></tr>
+<td align="left">Fully qualified image name; must include <i>registry/repository:version</i></td></tr>
 <tr class="a">
 <td align="left">loadDockerCache</td>
 <td align="center"> </td>
@@ -297,7 +296,7 @@ to a project or that should not be distributed to artifact consumers. This plugi
 element with an <code>&lt;id&gt;</code> element that matches the registry. If found, the <code>&lt;username&gt;</code> and
 <code>&lt;password&gt;</code> from that server element will be used. (The password is
 <a class="externalLink" href="https://maven.apache.org/guides/mini/guide-encryption.html">decrypted</a> if needed.)</p></section><section>
-<h3><a name="Configuration_from_pom.xml"></a>Configuration from pom.xml</h3>
+<h3><a name="Login_Configuration_from_pom.xml"></a>Login Configuration from pom.xml</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -336,7 +335,7 @@ element with an <code>&lt;id&gt;</code> element that matches the registry. If fo
 <h2><a name="Push_Goal"></a>Push Goal</h2>
 <p>The <a class="externalLink" href="https://chonton.github.io/podman-maven-plugin/push-mojo.html">push</a> goal binds by default to
 the <b>deploy</b> phase. This goal uses <code>podman</code> to <code>push</code> an image to its registry.</p><section>
-<h3><a name="Configuration"></a>Configuration</h3>
+<h3><a name="Push_Configuration"></a>Push Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -373,7 +372,7 @@ output.</p>
 configuration. When launching multiple containers, the container ordering is determined by the
 <code>requires</code> parameter. The <code>logs</code> configuration instructs the goal to collect container logs until
 the container is removed or maven exits.</p><section>
-<h3><a name="Configuration"></a>Configuration</h3>
+<h3><a name="Container-Run_Configuration"></a>Container-Run Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -390,15 +389,15 @@ the container is removed or maven exits.</p><section>
 <tr class="a">
 <td align="left">containers</td>
 <td align="center">&#x2713;</td>
-<td align="left">Map of container aliases to container configuration</td></tr>
+<td align="left">Map of container aliases to <a href="#containerconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ContainerConfig.html">ContainerConfig</a></a></td></tr>
 <tr class="b">
 <td align="left">devices</td>
 <td align="center"> </td>
-<td align="left">List of device configuration</td></tr>
+<td align="left">List of <a href="#deviceconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/DeviceConfig.html">DeviceConfig</a></a></td></tr>
 <tr class="a">
 <td align="left">network</td>
 <td align="center"> </td>
-<td align="left">Network configuration</td></tr>
+<td align="left"><a href="#networkconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/NetworkConfig.html">NetworkConfig</a></a></td></tr>
 <tr class="b">
 <td align="left">skip</td>
 <td align="center"> </td>
@@ -409,7 +408,7 @@ the container is removed or maven exits.</p><section>
 <td align="left">Url of podman remote service</td></tr>
 </tbody>
 </table><section>
-<h4><a name="Device_Configuration"></a>Device Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/DeviceConfig.html">DeviceConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/DeviceConfig.html">DeviceConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -441,7 +440,7 @@ the container is removed or maven exits.</p><section>
 <td align="left">Container allowed to write. Defaults to true</td></tr>
 </tbody>
 </table></section></section><section>
-<h3><a name="Network_Configuration"></a>Network Configuration</h3>
+<h3><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/NetworkConfig.html">NetworkConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/NetworkConfig.html">NetworkConfig</a></h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -461,7 +460,7 @@ the container is removed or maven exits.</p><section>
 <td align="left">Network driver name.  Defaults to <b>bridge</b></td></tr>
 </tbody>
 </table></section><section>
-<h3><a name="Container_Configuration"></a>Container Configuration</h3>
+<h3><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ContainerConfig.html">ContainerConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/ContainerConfig.html">ContainerConfig</a></h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -486,11 +485,11 @@ the container is removed or maven exits.</p><section>
 <tr class="a">
 <td align="left">wait</td>
 <td align="center"> </td>
-<td align="left">Post launch wait configuration</td></tr>
+<td align="left">Post launch <a href="#waitconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/WaitConfig.html">WaitConfig</a></a></td></tr>
 <tr class="b">
 <td align="left">log</td>
 <td align="center"> </td>
-<td align="left">Post launch logging configuration</td></tr>
+<td align="left">Post launch <a href="#logconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LogConfig.html">LogConfig</a></a></td></tr>
 <tr class="a">
 <td align="left">memory</td>
 <td align="center"> </td>
@@ -522,17 +521,17 @@ the container is removed or maven exits.</p><section>
 <tr class="b">
 <td align="left">mounts</td>
 <td align="center"> </td>
-<td align="left">Volume mappings</td></tr>
+<td align="left"><a href="#mountconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/MountConfig.html">MountConfig</a></a></td></tr>
 <tr class="a">
 <td align="left">ports</td>
 <td align="center"> </td>
-<td align="left">Map of host ports to container ports.</td></tr>
+<td align="left">Map of host ports to container ports. See <a href="#ports-map">Ports Map</a></td></tr>
 </tbody>
 </table><section>
 <h4><a name="Memory_Limits"></a>Memory Limits</h4>
 <p>Memory limit must be a number followed by unit of &#x2018;b&#x2019; (bytes), &#x2018;k&#x2019; (kibibytes), &#x2018;m&#x2019; (mebibytes), or
 &#x2018;g&#x2019; (gibibytes).</p></section><section>
-<h4><a name="Mounts_Configuration"></a>Mounts Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/MountConfig.html">MountConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/MountConfig.html">MountConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -545,18 +544,18 @@ the container is removed or maven exits.</p><section>
 <tr class="b">
 <td align="left">binds</td>
 <td align="center"> </td>
-<td align="left">List of BindMount</td></tr>
+<td align="left">List of <a href="#bindmountconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/BindMountConfig.html">BindMountConfig</a></a></td></tr>
 <tr class="a">
 <td align="left">temps</td>
 <td align="center"> </td>
-<td align="left">List of TempFs</td></tr>
+<td align="left">List of <a href="#tempfsmountconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/TempFsMountConfig.html">TempFsMountConfig</a></a></td></tr>
 <tr class="b">
 <td align="left">volumes</td>
 <td align="center"> </td>
-<td align="left">List of VolumeMount</td></tr>
+<td align="left">List of <a href="#volumemountconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/VolumeMountConfig.html">VolumeMountConfig</a></a></td></tr>
 </tbody>
 </table></section><section>
-<h4><a name="BindMount_Configuration"></a>BindMount Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/BindMountConfig.html">BindMountConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/BindMountConfig.html">BindMountConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -589,7 +588,7 @@ the container is removed or maven exits.</p><section>
 may be defined using
 <a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_permissions#Symbolic_notation">Symbolic</a> or
 <a class="externalLink" href="https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation">Numeric</a> notation.</p></section></section><section>
-<h4><a name="TempFs_Configuration"></a>TempFs Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/TempFsMountConfig.html">TempFsMountConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/TempFsMountConfig.html">TempFsMountConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -605,7 +604,7 @@ may be defined using
 <td align="left">Absolute path of container directory</td></tr>
 </tbody>
 </table></section><section>
-<h4><a name="BindMount_Configuration"></a>BindMount Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/VolumeMountConfig.html">VolumeMountConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/VolumeMountConfig.html">VolumeMountConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -633,7 +632,7 @@ may be defined using
 <p>Key is the name of a maven property. If property is set, then that value is used as host the
 [interface:]port; otherwise the property is set to the value of the dynamically assigned host port.
 Each entry is the value of an exposed container port.</p></section><section>
-<h4><a name="Log_Configuration"></a>Log Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LogConfig.html">LogConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/LogConfig.html">LogConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -653,7 +652,7 @@ Each entry is the value of an exposed container port.</p></section><section>
 <td align="left">Display timestamp on each line. Defaults to false.</td></tr>
 </tbody>
 </table></section><section>
-<h4><a name="Wait_Configuration"></a>Wait Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/WaitConfig.html">WaitConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/WaitConfig.html">WaitConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -666,7 +665,7 @@ Each entry is the value of an exposed container port.</p></section><section>
 <tr class="b">
 <td align="left">http</td>
 <td align="center"> </td>
-<td align="left">Http probe options</td></tr>
+<td align="left"><a href="#httpwaitconfig"><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/HttpWaitConfig.html">HttpWaitConfig</a></a></td></tr>
 <tr class="a">
 <td align="left">log</td>
 <td align="center"> </td>
@@ -677,7 +676,7 @@ Each entry is the value of an exposed container port.</p></section><section>
 <td align="left">Seconds to wait before failing. Default is 60.</td></tr>
 </tbody>
 </table></section><section>
-<h4><a name="HttpWait_Configuration"></a>HttpWait Configuration</h4>
+<h4><a name="<a href="./apidocs/org/honton/chas/podman/maven/plugin/config/HttpWaitConfig.html">HttpWaitConfig</a>"></a><a href="./apidocs/org/honton/chas/podman/maven/plugin/config/HttpWaitConfig.html">HttpWaitConfig</a></h4>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -710,7 +709,7 @@ Each entry is the value of an exposed container port.</p></section><section>
 by default to the <b>post-integration-test</b> phase. This goal uses <code>podman container run</code> to delete
 containers and <code>podman network rm</code> to delete the network. The order of container deletion is the
 reverse of the start order.</p><section>
-<h3><a name="Configuration"></a>Configuration</h3>
+<h3><a name="Container-Rm_Configuration"></a>Container-Rm Configuration</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -727,11 +726,11 @@ reverse of the start order.</p><section>
 <tr class="a">
 <td align="left">containers</td>
 <td align="center">&#x2713;</td>
-<td align="left">Map of container aliases to container configuration</td></tr>
+<td align="left">Map of container aliases to <a href="#container-config">Container Config</a></td></tr>
 <tr class="b">
 <td align="left">network</td>
 <td align="center"> </td>
-<td align="left">Network configuration</td></tr>
+<td align="left"><a href="#network-config">Network Config</a></td></tr>
 <tr class="a">
 <td align="left">skip</td>
 <td align="center"> </td>
@@ -742,23 +741,7 @@ reverse of the start order.</p><section>
 <td align="left">Url of podman remote service</td></tr>
 </tbody>
 </table></section><section>
-<h3><a name="Network_Configuration"></a>Network Configuration</h3>
-<table border="0" class="table table-striped">
-<thead>
-
-<tr class="a">
-<th align="right">Parameter</th>
-<th align="center">Required</th>
-<th align="left">Description</th></tr>
-</thead><tbody>
-
-<tr class="b">
-<td align="left">name</td>
-<td align="center"> </td>
-<td align="left">Name of network.  Defaults to <code>artifactId</code></td></tr>
-</tbody>
-</table></section><section>
-<h3><a name="Container_Configuration"></a>Container Configuration</h3>
+<h3><a name="Container_Config"></a>Container Config</h3>
 <table border="0" class="table table-striped">
 <thead>
 
@@ -772,6 +755,22 @@ reverse of the start order.</p><section>
 <td align="left">name</td>
 <td align="center"> </td>
 <td align="left">Name of the container. Defaults to container's alias</td></tr>
+</tbody>
+</table></section><section>
+<h3><a name="Network_Config"></a>Network Config</h3>
+<table border="0" class="table table-striped">
+<thead>
+
+<tr class="a">
+<th align="right">Parameter</th>
+<th align="center">Required</th>
+<th align="left">Description</th></tr>
+</thead><tbody>
+
+<tr class="b">
+<td align="left">name</td>
+<td align="center"> </td>
+<td align="left">Name of network.  Defaults to <code>artifactId</code></td></tr>
 </tbody>
 </table>
 <h1>Examples</h1></section></section><section>
