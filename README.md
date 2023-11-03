@@ -16,10 +16,10 @@ Use podman to build, push, and run images. This plugin has eight goals:
 Build images using [podman](https://docs.podman.io/en/latest/markdown/podman-build.1.html) with this
 plugin's [containerfile](#containerfile-goal) and [build](#build-goal) goals.
 
-During the **integration-test** phase, deploy your containers using this plugin's
+During the **pre-integration-test** phase, deploy your containers using this plugin's
 [container-run](#container-run-goal) goal. Use
 [failsafe](https://maven.apache.org/surefire/maven-failsafe-plugin/) to run integration tests.
-During the **post-test** phase, undeploy your containers using this plugin's
+During the **post-integration-test** phase, undeploy your containers using this plugin's
 [container-rm](#container-rm-goal) goal.
 
 ## Remote Podman
@@ -122,7 +122,7 @@ the **package** phase. This goal executes `podman build` with the proper paramet
 ## Push Goal
 
 The [push](https://chonton.github.io/podman-maven-plugin/push-mojo.html) goal binds by default to
-the **deploy** phase. This goal uses `podman` to `push` an image to its registry.
+the **deploy** phase. This goal uses `podman push` to push an image to its registry.
 
 ### Push Configuration
 
@@ -136,7 +136,8 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
 ## Volume-Create Goal
 
 The [volume-create](https://chonton.github.io/podman-maven-plugin/volume-create-mojo.html) goal
-binds by default to the **prepare-package** phase. This goal uses `podman` to `create` a volume.
+binds by default to the **prepare-package** phase. This goal uses `podman volume create` to create a
+volume.
 
 ### Volume-Create Configuration
 
@@ -148,8 +149,8 @@ binds by default to the **prepare-package** phase. This goal uses `podman` to `c
 ## Volume-Import Goal
 
 The [volume-import](https://chonton.github.io/podman-maven-plugin/volume-import-mojo.html) goal
-binds by default to the **package** phase. This goal uses `podman` to `import` contents into a
-volume.
+binds by default to the **package** phase. This goal uses `podman volume import` to copy contents
+into a volume.
 
 ### Volume-Create Configuration
 
@@ -162,9 +163,9 @@ volume.
 ## Container-Run Goal
 
 The [container-run](https://chonton.github.io/podman-maven-plugin/container-run-mojo.html) goal
-binds by default to the **pre-integration-test** phase. This goal uses `podman network rm` to create
-a network, `podman container run` to launch containers, and `podman logs` to capture the containers`
-output.
+binds by default to the **pre-integration-test** phase. This goal uses `podman network create` to
+create a network, `podman container run` to launch containers, and `podman logs` to capture the
+containers` output.
 
 After launching, the goal will wait for the container to become healthy based upon the `wait`
 configuration. When launching multiple containers, the container ordering is determined by the
@@ -263,9 +264,9 @@ may be defined using
 
 #### Ports Map
 
-Key is the name of a maven property. If property is set, then that value is used as host the
-\[interface:]port; otherwise the property is set to the value of the dynamically assigned host port.
-Each entry is the value of an exposed container port.
+Key is the name of a maven property. If property is set, then that value is used as the host tcp
+\[interface:]port; otherwise the property is set to the value of the dynamically assigned host tcp
+port. Each entry is the value of an exposed container tcp port.
 
 #### Log Config
 
@@ -294,7 +295,7 @@ Each entry is the value of an exposed container port.
 ## Container-Rm Goal
 
 The [container-rm](https://chonton.github.io/podman-maven-plugin/container-rm-mojo.html) goal binds
-by default to the **post-integration-test** phase. This goal uses `podman container run` to delete
+by default to the **post-integration-test** phase. This goal uses `podman container rm` to delete
 containers and `podman network rm` to delete the network. The order of container deletion is the
 reverse of the start order.
 
