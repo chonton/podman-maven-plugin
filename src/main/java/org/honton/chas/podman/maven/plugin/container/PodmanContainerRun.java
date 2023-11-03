@@ -1,5 +1,6 @@
 package org.honton.chas.podman.maven.plugin.container;
 
+import com.fasterxml.jackson.jr.ob.JSON;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -13,10 +14,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -26,6 +28,7 @@ import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
 import org.honton.chas.podman.maven.plugin.config.HttpWaitConfig;
 import org.honton.chas.podman.maven.plugin.config.LogConfig;
@@ -39,13 +42,13 @@ import org.honton.chas.podman.maven.plugin.config.WaitConfig;
 @Mojo(name = "container-run", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, threadSafe = true)
 public class PodmanContainerRun extends PodmanContainer {
 
-  private BiConsumer<Integer, String> createConsumer(
+  private Consumer<String> createConsumer(
       BufferedWriter writer, String alias, Consumer<String> matcher) {
-    return (Integer n, String line) -> {
+    return (String line) -> {
       try {
         Log log = getLog();
         if (log.isDebugEnabled()) {
-          log.debug(alias + '(' + n + "): " + line);
+          log.debug(alias + ": " + line);
         }
         matcher.accept(line);
         writer.append(line);
@@ -84,7 +87,7 @@ public class PodmanContainerRun extends PodmanContainer {
 
   @SneakyThrows
   private void runContainer(ContainerConfig containerConfig, String networkName) {
-    executeCommand(
+    ContainerRunCommandLine runCommandLine =
         new ContainerRunCommandLine(this, containerConfig)
             .addContainerName()
             .addContainerOptions(networkName)
@@ -92,10 +95,43 @@ public class PodmanContainerRun extends PodmanContainer {
             .addDevices(devices)
             .addMounts()
             .addPorts()
-            .addContainerCmd());
+            .addContainerCmd();
 
+    executeCommand(runCommandLine);
+    Map<Integer, String> portToPropertyName = runCommandLine.getPortToPropertyName();
+    if (!portToPropertyName.isEmpty()) {
+      setAssignedPorts(containerConfig.name, portToPropertyName);
+    }
     CountDownLatch logFragmentWait = startLogSpooler(containerConfig);
     waitForStartup(containerConfig.wait, logFragmentWait);
+  }
+
+  private void setAssignedPorts(String containerName, Map<Integer, String> portToPropertyName)
+      throws MojoExecutionException, IOException {
+    String inspect =
+        executeInfoCommand(
+            new CommandLine(this)
+                .addCmd("container")
+                .addCmd("inspect")
+                .addParameter(containerName)
+                .addParameter("--format")
+                .addParameter("{{.HostConfig}}")
+                .getCommand());
+
+    Map<String, List<PortBinding>> portToBindings =
+        JSON.std.beanFrom(HostConfig.class, inspect).PortBindings;
+
+    portToPropertyName.forEach(
+        (port, name) -> {
+          List<PortBinding> portBindings = portToBindings.get(port + "/tcp");
+          if (portBindings != null && !portBindings.isEmpty()) {
+            // tbd - what to do with HostIp? why would there be multiple bindings? probably for
+            // multi-homed hosts?
+            setProperty(name, portBindings.get(0).HostPort);
+          } else {
+            getLog().warn(name + " not set; container port " + port + " has no mapping");
+          }
+        });
   }
 
   public String lookupProperty(String mavenPropertyName) {
@@ -112,15 +148,20 @@ public class PodmanContainerRun extends PodmanContainer {
 
     WaitConfig waitConfig = containerConfig.wait;
     boolean logWait = waitConfig != null && waitConfig.log != null;
-    CountDownLatch logDone = logWait ? new CountDownLatch(1) : null;
-    Consumer<String> matcher =
-        logWait
-            ? line -> {
-              if (line.contains(waitConfig.log)) {
-                logDone.countDown();
-              }
+    CountDownLatch logDone;
+    Consumer<String> matcher;
+    if (logWait) {
+      logDone = new CountDownLatch(1);
+      matcher =
+          line -> {
+            if (line.contains(waitConfig.log)) {
+              logDone.countDown();
             }
-            : line -> {};
+          };
+    } else {
+      logDone = null;
+      matcher = line -> {};
+    }
 
     LogConfig logConfig = containerConfig.log;
     if (logWait && logConfig == null) {
@@ -219,5 +260,18 @@ public class PodmanContainerRun extends PodmanContainer {
     interpolator.setEscapeString("\\");
     interpolator.addValueSource(new PropertiesBasedValueSource(project.getProperties()));
     return interpolator;
+  }
+
+  @Data
+  static class HostConfig {
+
+    Map<String, List<PortBinding>> PortBindings;
+  }
+
+  @Data
+  static class PortBinding {
+
+    String HostIp;
+    String HostPort;
   }
 }

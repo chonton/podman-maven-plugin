@@ -1,16 +1,17 @@
 package org.honton.chas.podman.maven.plugin.container;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import lombok.SneakyThrows;
+import lombok.Getter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 import org.honton.chas.podman.maven.plugin.config.BindMountConfig;
@@ -22,6 +23,7 @@ import org.honton.chas.podman.maven.plugin.config.VolumeMountConfig;
 class ContainerRunCommandLine extends CommandLine {
   private final ContainerConfig containerConfig;
   private final PodmanContainerRun goal;
+  @Getter private final Map<Integer, String> portToPropertyName = new HashMap<>();
 
   ContainerRunCommandLine(PodmanContainerRun goal, ContainerConfig containerConfig) {
     super(goal);
@@ -221,16 +223,10 @@ class ContainerRunCommandLine extends CommandLine {
   private void addPort(String mavenPropertyName, Integer containerPort) {
     String hostPortAndInterface = goal.lookupProperty(mavenPropertyName);
     if (hostPortAndInterface == null) {
-      hostPortAndInterface = allocatePort();
+      hostPortAndInterface = "";
       goal.setProperty(mavenPropertyName, hostPortAndInterface);
+      portToPropertyName.put(containerPort, mavenPropertyName);
     }
     addParameter("--publish").addParameter(hostPortAndInterface + ':' + containerPort);
-  }
-
-  @SneakyThrows
-  private String allocatePort() {
-    try (ServerSocket serverSocket = new ServerSocket(0)) {
-      return Integer.toString(serverSocket.getLocalPort());
-    }
   }
 }

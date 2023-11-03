@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +44,7 @@ public abstract class PodmanGoal extends AbstractMojo {
   // work variables ...
   protected Path pwd; // current working directory
   protected StringBuilder errorOutput;
-  private AtomicReference<ExecutorService> executor = new AtomicReference<>();
+  private final AtomicReference<ExecutorService> executor = new AtomicReference<>();
 
   public final void execute() throws MojoFailureException, MojoExecutionException {
     if (skip) {
@@ -74,7 +74,7 @@ public abstract class PodmanGoal extends AbstractMojo {
 
   protected abstract void doExecute() throws MojoExecutionException, IOException;
 
-  void pumpLog(InputStream is, BiConsumer<Integer, String> lineConsumer) {
+  void pumpLog(InputStream is, Consumer<String> lineConsumer) {
     try (LineNumberReader reader =
         new LineNumberReader(new InputStreamReader(is, StandardCharsets.UTF_8), 128)) {
       for (; ; ) {
@@ -82,10 +82,10 @@ public abstract class PodmanGoal extends AbstractMojo {
         if (line == null) {
           break;
         }
-        lineConsumer.accept(reader.getLineNumber(), line);
+        lineConsumer.accept(line);
       }
     } catch (IOException e) {
-      lineConsumer.accept(-1, e.getMessage());
+      lineConsumer.accept(e.getMessage());
     }
   }
 
@@ -109,8 +109,15 @@ public abstract class PodmanGoal extends AbstractMojo {
     executeCommand(command, stdin, this::infoLine, this::errorLine, this::throwException);
   }
 
-  protected void createProcess(CommandLine generator, BiConsumer<Integer, String> filter)
-      throws IOException {
+  protected String executeInfoCommand(List<String> command)
+      throws MojoExecutionException, IOException {
+    StringBuilder sb = new StringBuilder();
+    executeCommand(
+        command, null, (l) -> sb.append(l).append('\n'), this::errorLine, this::throwException);
+    return sb.toString();
+  }
+
+  protected void createProcess(CommandLine generator, Consumer<String> filter) throws IOException {
     createProcess(generator.getCommand(), null, filter, filter);
   }
 
@@ -122,18 +129,15 @@ public abstract class PodmanGoal extends AbstractMojo {
   protected void executeCommand(
       List<String> command,
       String stdin,
-      BiConsumer<Integer, String> stdout,
-      BiConsumer<Integer, String> stderr,
+      Consumer<String> stdout,
+      Consumer<String> stderr,
       IntConsumer exitCode)
       throws MojoExecutionException, IOException {
     waitForProcess(exitCode, createProcess(command, stdin, stdout, stderr));
   }
 
   protected Process createProcess(
-      List<String> command,
-      String stdin,
-      BiConsumer<Integer, String> stdout,
-      BiConsumer<Integer, String> stderr)
+      List<String> command, String stdin, Consumer<String> stdout, Consumer<String> stderr)
       throws IOException {
     getLog().info(String.join(" ", command));
     errorOutput = new StringBuilder();
@@ -160,14 +164,11 @@ public abstract class PodmanGoal extends AbstractMojo {
     }
   }
 
-  private void infoLine(Integer lineNo, String lineText) {
-    if (getLog().isDebugEnabled()) {
-      lineText = lineNo + ':' + lineText;
-    }
+  private void infoLine(String lineText) {
     getLog().info(lineText);
   }
 
-  private void errorLine(Integer lineNo, String lineText) {
+  private void errorLine(String lineText) {
     errorOutput.append(lineText);
 
     Matcher warning = WARNING.matcher(lineText);
@@ -178,9 +179,6 @@ public abstract class PodmanGoal extends AbstractMojo {
       if (error.matches()) {
         getLog().error(error.group(2));
       } else {
-        if (getLog().isDebugEnabled()) {
-          lineText = lineNo + ':' + lineText;
-        }
         getLog().info(lineText);
       }
     }

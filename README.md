@@ -2,9 +2,9 @@
 
 Use podman to build, push, and run images. This plugin has eight goals:
 
-1. [Create Containerfile from base image and copy directives](#containerfile-goal)
-2. [Build image from Containerfile and context](#build-goal)
-3. [Login to registry](#login-goal)
+1. [Login to registry](#login-goal)
+2. [Create Containerfile from base image and copy directives](#containerfile-goal)
+3. [Build image from Containerfile and context](#build-goal)
 4. [Push image to registry](#push-goal)
 5. [Create a volume](#volume-create-goal)
 6. [Import volume contents](#volume-import-goal)
@@ -22,10 +22,44 @@ During the **integration-test** phase, deploy your containers using this plugin'
 During the **post-test** phase, undeploy your containers using this plugin's
 [container-rm](#container-rm-goal) goal.
 
-# Plugin
+## Remote Podman
+
+This plugin supports
+[remote podman](https://docs.podman.io/en/v4.4/markdown/podman.1.html#remote-access) using
+`connection` or `url` parameters. When using remote podman, bind mounts will not work. You will need
+to create a volume, import its contents, and run the container with a volume mount. Port mappings
+will map the container port to the remote podman host port.
+
+# Plugin Reports
 
 Plugin reports available at
 [plugin info](https://chonton.github.io/podman-maven-plugin/plugin-info.html).
+
+## Login Goal
+
+The [login](https://chonton.github.io/podman-maven-plugin/login-mojo.html) goal binds by default to
+the **prepare-package** phase. This goal executes `podman login` with credentials from
+**settings.xml** or specified in the configuration.
+
+### Login Configuration from settings.xml
+
+Maven's [settings.xml](https://maven.apache.org/settings.html) contains items that are not specific
+to a project or that should not be distributed to artifact consumers. This plugin will read the
+[servers](https://maven.apache.org/settings.html#servers) element of settings.xml to find a server
+element with an `<id>` element that matches the registry. If found, the `<username>` and
+`<password>` from that server element will be used. (The password is
+[decrypted](https://maven.apache.org/guides/mini/guide-encryption.html) if needed.)
+
+### Login Configuration from pom.xml
+
+|  Parameter | Required | Description                                            |
+|-----------:|:--------:|:-------------------------------------------------------|
+| connection |          | Remote podman connection name                          |
+|   registry |    ✓     | Registry to authenticate with                          |
+|   password |          | If registry not found in settings.xml, use as password |
+|       skip |          | Skip login                                             |
+|   username |          | If registry not found in settings.xml, use as username |
+|        url |          | Url of podman remote service                           |
 
 ## Containerfile Goal
 
@@ -84,32 +118,6 @@ the **package** phase. This goal executes `podman build` with the proper paramet
 |       platforms |          | List of platforms.  Each element may contain comma separated *os/arch*           |
 |            skip |          | Skip build                                                                       |
 |             url |          | Url of podman remote service                                                     |
-
-## Login Goal
-
-The [login](https://chonton.github.io/podman-maven-plugin/login-mojo.html) goal binds by default to
-the **prepare-package** phase. This goal executes `podman login` with credentials from
-**settings.xml** or specified in the configuration.
-
-### Login Configuration from settings.xml
-
-Maven's [settings.xml](https://maven.apache.org/settings.html) contains items that are not specific
-to a project or that should not be distributed to artifact consumers. This plugin will read the
-[servers](https://maven.apache.org/settings.html#servers) element of settings.xml to find a server
-element with an `<id>` element that matches the registry. If found, the `<username>` and
-`<password>` from that server element will be used. (The password is
-[decrypted](https://maven.apache.org/guides/mini/guide-encryption.html) if needed.)
-
-### Login Configuration from pom.xml
-
-|  Parameter | Required | Description                                            |
-|-----------:|:--------:|:-------------------------------------------------------|
-| connection |          | Remote podman connection name                          |
-|   registry |    ✓     | Registry to authenticate with                          |
-|   password |          | If registry not found in settings.xml, use as password |
-|       skip |          | Skip login                                             |
-|   username |          | If registry not found in settings.xml, use as username |
-|        url |          | Url of podman remote service                           |
 
 ## Push Goal
 

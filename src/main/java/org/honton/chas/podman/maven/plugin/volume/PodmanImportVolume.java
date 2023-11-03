@@ -3,7 +3,6 @@ package org.honton.chas.podman.maven.plugin.volume;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -36,18 +35,20 @@ public class PodmanImportVolume extends PodmanGoal {
   protected final void doExecute() throws IOException, MojoExecutionException {
     File tar;
     if (src.isDirectory()) {
-      tar = project.getBasedir().toPath().resolve(Path.of("target", src.getName() + ".tar")).toFile();
+      tar =
+          project.getBasedir().toPath().resolve(Path.of("target", src.getName() + ".tar")).toFile();
       tarArchive(src, tar);
     } else {
       tar = src;
     }
 
-    executeCommand(new CommandLine(this)
-        .addCmd("volume")
-        .addParameter("import")
-        .addParameter(volume)
-        .addParameter(tar.getAbsolutePath())
-        .getCommand());
+    executeCommand(
+        new CommandLine(this)
+            .addCmd("volume")
+            .addParameter("import")
+            .addParameter(volume)
+            .addParameter(tar.getAbsolutePath())
+            .getCommand());
   }
 
   private void tarArchive(File src, File dst) throws IOException {

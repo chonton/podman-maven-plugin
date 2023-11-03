@@ -79,20 +79,6 @@
   <dependencyManagement>
     <dependencies>
 
-      <!-- convergence between io.fabric8:zjsonpatch:0.3.0 and io.fabric8:kubernetes-client:6.6.2 -->
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-core</artifactId>
-        <version>2.14.2</version>
-      </dependency>
-
-      <!-- convergence between io.fabric8:zjsonpatch:0.3.0 and io.fabric8:kubernetes-client:6.6.2 -->
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.14.2</version>
-      </dependency>
-
       <!-- convergence between org.codehaus.plexus:plexus-archiver:4.7.1 and org.codehaus.plexus:plexus-io:3.4.1 -->
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
@@ -104,6 +90,12 @@
   </dependencyManagement>
 
   <dependencies>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.jr</groupId>
+      <artifactId>jackson-jr-objects</artifactId>
+      <version>2.15.3</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.maven</groupId>
