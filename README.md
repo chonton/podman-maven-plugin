@@ -1,13 +1,15 @@
 # podman-maven-plugin
 
-Use podman to build, push, and run images. This plugin has six goals:
+Use podman to build, push, and run images. This plugin has eight goals:
 
 1. [Create Containerfile from base image and copy directives](#containerfile-goal)
 2. [Build image from Containerfile and context](#build-goal)
 3. [Login to registry](#login-goal)
 4. [Push image to registry](#push-goal)
-5. [Run image in container](#container-run-goal)
-6. [Remove container](#container-rm-goal)
+5. [Create a volume](#volume-create-goal)
+6. [Import volume contents](#volume-import-goal)
+7. [Run image in container](#container-run-goal)
+8. [Remove container](#container-rm-goal)
 
 # Rationale
 
@@ -122,6 +124,32 @@ the **deploy** phase. This goal uses `podman` to `push` an image to its registry
 |      image |    ✓     | The fully qualified image name, with registry/repository:version |
 |       skip |          | Skip push                                                        |
 |        url |          | Url of podman remote service                                     |
+
+## Volume-Create Goal
+
+The [volume-create](https://chonton.github.io/podman-maven-plugin/volume-create-mojo.html) goal
+binds by default to the **prepare-package** phase. This goal uses `podman` to `create` a volume.
+
+### Volume-Create Configuration
+
+|  Parameter | Required | Description                   |
+|-----------:|:--------:|:------------------------------|
+| connection |          | Remote podman connection name |
+|     volume |    ✓     | The volume name               |
+
+## Volume-Import Goal
+
+The [volume-import](https://chonton.github.io/podman-maven-plugin/volume-import-mojo.html) goal
+binds by default to the **package** phase. This goal uses `podman` to `import` contents into a
+volume.
+
+### Volume-Create Configuration
+
+|  Parameter | Required | Description                                            |
+|-----------:|:--------:|:-------------------------------------------------------|
+| connection |          | Remote podman connection name                          |
+|     volume |    ✓     | The volume name                                        |
+|        src |    ✓     | The content to copy.  Either a tar file or a directory |
 
 ## Container-Run Goal
 
