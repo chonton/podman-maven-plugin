@@ -79,11 +79,18 @@
   <dependencyManagement>
     <dependencies>
 
-      <!-- convergence between org.codehaus.plexus:plexus-archiver:4.7.1 and org.codehaus.plexus:plexus-io:3.4.1 -->
+      <!-- convergence in org.codehaus.plexus:plexus-archiver:4.8.0 -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.13.0</version>
+      </dependency>
+
+      <!-- convergence in org.codehaus.plexus:plexus-archiver:4.8.0 -->
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.5.1</version>
+        <version>4.0.0</version>
       </dependency>
 
     </dependencies>
@@ -120,7 +127,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-archiver</artifactId>
-      <version>4.7.1</version>
+      <version>4.8.0</version>
     </dependency>
 
     <dependency>
