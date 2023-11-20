@@ -61,7 +61,7 @@
   <properties>
     <git-code-format-maven-plugin.version>4.2</git-code-format-maven-plugin.version>
     <javadoc-plugin.version>3.5.0</javadoc-plugin.version>
-    <lombok.version>1.18.26</lombok.version>
+    <lombok.version>1.18.30</lombok.version>
 
     <maven.compiler.release>11</maven.compiler.release>
     <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
@@ -331,7 +331,7 @@
                 <requireMavenVersion>
                   <version>[${maven.version},)</version>
                 </requireMavenVersion>
-                <dependencyConvergence></dependencyConvergence>
+                <dependencyConvergence/>
               </rules>
             </configuration>
           </execution>
