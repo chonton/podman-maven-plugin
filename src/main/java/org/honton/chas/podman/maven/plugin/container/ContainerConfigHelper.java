@@ -86,8 +86,10 @@ class ContainerConfigHelper {
   private static class RequirementsNode {
     final String alias;
     final ContainerConfig containerConfig;
+
     /** The containers that this container requires before deployment */
     final Set<String> requires;
+
     /** The containers that depend upon this container */
     final Map<String, RequirementsNode> depends;
 
