@@ -10,6 +10,6 @@ class ContainerRmCommandLine extends CommandLine {
     addCmd("container");
     addCmd("rm");
     addParameter("-f");
-    addParameter(containerConfig.name);
+    addParameter(goal.containerId(containerConfig));
   }
 }

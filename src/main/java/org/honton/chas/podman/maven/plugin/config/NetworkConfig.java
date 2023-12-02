@@ -6,7 +6,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 /** Network configuration */
 @ToString
 public class NetworkConfig {
-  /** Name of the network. Defaults to the project's artifactId */
+  /** Name of the network. Defaults to `${JOB_NAME}` or `${project.artifactId}` */
   @Parameter public String name;
 
   /** Driver that manages the network */

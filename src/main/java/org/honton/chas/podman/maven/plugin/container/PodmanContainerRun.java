@@ -97,23 +97,25 @@ public class PodmanContainerRun extends PodmanContainer {
             .addPorts()
             .addContainerCmd();
 
-    executeCommand(runCommandLine);
+    String containerId = executeInfoCommand(runCommandLine.getCommand());
+    setProperty(containerIdPropertyName(containerConfig), containerId);
+
     Map<Integer, String> portToPropertyName = runCommandLine.getPortToPropertyName();
     if (!portToPropertyName.isEmpty()) {
-      setAssignedPorts(containerConfig.name, portToPropertyName);
+      setAssignedPorts(containerId, portToPropertyName);
     }
-    CountDownLatch logFragmentWait = startLogSpooler(containerConfig);
+    CountDownLatch logFragmentWait = startLogSpooler(containerId, containerConfig);
     waitForStartup(containerConfig.wait, logFragmentWait);
   }
 
-  private void setAssignedPorts(String containerName, Map<Integer, String> portToPropertyName)
+  private void setAssignedPorts(String containerId, Map<Integer, String> portToPropertyName)
       throws MojoExecutionException, IOException {
     String inspect =
         executeInfoCommand(
             new CommandLine(this)
                 .addCmd("container")
                 .addCmd("inspect")
-                .addParameter(containerName)
+                .addParameter(containerId)
                 .addParameter("--format")
                 .addParameter("{{.HostConfig}}")
                 .getCommand());
@@ -138,12 +140,7 @@ public class PodmanContainerRun extends PodmanContainer {
     return project.getProperties().getProperty(mavenPropertyName);
   }
 
-  public void setProperty(String mavenPropertyName, String mavenPropertyValue) {
-    getLog().info("Setting " + mavenPropertyName + " to " + mavenPropertyValue);
-    project.getProperties().setProperty(mavenPropertyName, mavenPropertyValue);
-  }
-
-  private CountDownLatch startLogSpooler(ContainerConfig containerConfig)
+  private CountDownLatch startLogSpooler(String containerId, ContainerConfig containerConfig)
       throws IOException, MojoExecutionException {
 
     WaitConfig waitConfig = containerConfig.wait;
@@ -180,7 +177,7 @@ public class PodmanContainerRun extends PodmanContainer {
       Files.createDirectories(path.getParent());
 
       createProcess(
-          new LogsCommandLine(this, logConfig, containerConfig.name),
+          new LogsCommandLine(this, logConfig, containerId),
           createConsumer(
               Files.newBufferedWriter(
                   path,

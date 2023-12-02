@@ -17,7 +17,8 @@ import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
 @UtilityClass
 class ContainerConfigHelper {
 
-  public List<ContainerConfig> order(Map<String, ContainerConfig> containers, Log log)
+  public List<ContainerConfig> order(
+      String networkName, Map<String, ContainerConfig> containers, Log log)
       throws MojoExecutionException {
     if (containers == null) {
       return List.of();
@@ -33,7 +34,7 @@ class ContainerConfigHelper {
           } else {
             containerConfig.alias = alias;
             if (containerConfig.name == null) {
-              containerConfig.name = alias;
+              containerConfig.name = networkName + '.' + alias;
             }
             aliasToNode.put(alias, new RequirementsNode(alias, containerConfig));
           }
@@ -84,6 +85,7 @@ class ContainerConfigHelper {
 
   @ToString(of = {"alias", "requires"})
   private static class RequirementsNode {
+
     final String alias;
     final ContainerConfig containerConfig;
 

@@ -49,7 +49,7 @@ class ContainerRunCommandLine extends CommandLine {
   ContainerRunCommandLine addContainerName() {
     addParameter("--name");
     addParameter(containerConfig.name);
-    if (!containerConfig.alias.equalsIgnoreCase(containerConfig.name)) {
+    if (!containerConfig.alias.equals(containerConfig.name)) {
       addParameter("--network-alias");
       addParameter(containerConfig.alias);
     }

@@ -12,7 +12,7 @@ public class ContainerConfig {
   /** Network alias of the container */
   public String alias;
 
-  /** Name of the container. Defaults to container's map key */
+  /** Name of the container. Defaults to `${network.name}.${container.alias}` */
   @Parameter public String name;
 
   /** Comma separated dependent container names */

@@ -1,7 +1,8 @@
 package org.honton.chas.podman.maven.plugin.container;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.ListIterator;
 import lombok.SneakyThrows;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;

@@ -35,6 +35,11 @@ will map the container port to the remote podman host port.
 Plugin reports available at
 [plugin info](https://chonton.github.io/podman-maven-plugin/plugin-info.html).
 
+# Container Name vs Container Alias
+
+The container name is the shorthand name of the container as seen by the host. The container alias
+is used as the network host name of the container as seen from inside the network.
+
 ## Login Goal
 
 The [login](https://chonton.github.io/podman-maven-plugin/login-mojo.html) goal binds by default to
@@ -167,6 +172,8 @@ binds by default to the **pre-integration-test** phase. This goal uses `podman n
 create a network, `podman container run` to launch containers, and `podman logs` to capture the
 containers` output.
 
+The resulting container's id is saved in the maven property `container.${alias}.id`.
+
 After launching, the goal will wait for the container to become healthy based upon the `wait`
 configuration. When launching multiple containers, the container ordering is determined by the
 `requires` parameter. The `logs` configuration instructs the goal to collect container logs until
@@ -195,29 +202,29 @@ the container is removed or maven exits.
 
 ### Network Config
 
-| Parameter | Required | Description                                  |
-|----------:|:--------:|:---------------------------------------------|
-|      name |          | Name of network.  Defaults to `artifactId`   |
-|    driver |          | Network driver name.  Defaults to **bridge** |
+| Parameter | Required | Description                                                            |
+|----------:|:--------:|:-----------------------------------------------------------------------|
+|      name |          | Name of network.  Defaults to `${JOB_NAME}` or `${project.artifactId}` |
+|    driver |          | Network driver name.  Defaults to **bridge**                           |
 
 ### Container Config
 
-|  Parameter | Required | Description                                                            |
-|-----------:|:--------:|:-----------------------------------------------------------------------|
-|       name |          | Name of the container. Defaults to container's alias                   |
-|   requires |          | Comma separated dependent container names                              |
-|      image |    ✓     | Fully qualified image name to run                                      |
-|       wait |          | Post launch [Wait Config](#wait-config)                                |
-|        log |          | Post launch [Log Config](#log-config)                                  |
-|     memory |          | Memory limit.                                                          |
-|     memory |          | Memory plus swap limit.                                                |
-|        cmd |          | Override image command to execute                                      |
-|       args |          | Override image arguments for command                                   |
-| entrypoint |          | Override image entrypoint                                              |
-|    envFile |          | File containing environment variables that are set when container runs |
-|        env |          | Map of environment variables that are set when container runs          |
-|     mounts |          | [Mount Config](#mount-config)                                          |
-|      ports |          | Map of host ports to container ports. See [Ports Map](#ports-map)      |
+|  Parameter | Required | Description                                                             |
+|-----------:|:--------:|:------------------------------------------------------------------------|
+|       name |          | Name of the container. Defaults to `${network.name}.${container.alias}` |
+|   requires |          | Comma separated dependent container names                               |
+|      image |    ✓     | Fully qualified image name to run                                       |
+|       wait |          | Post launch [Wait Config](#wait-config)                                 |
+|        log |          | Post launch [Log Config](#log-config)                                   |
+|     memory |          | Memory limit.                                                           |
+|     memory |          | Memory plus swap limit.                                                 |
+|        cmd |          | Override image command to execute                                       |
+|       args |          | Override image arguments for command                                    |
+| entrypoint |          | Override image entrypoint                                               |
+|    envFile |          | File containing environment variables that are set when container runs  |
+|        env |          | Map of environment variables that are set when container runs           |
+|     mounts |          | [Mount Config](#mount-config)                                           |
+|      ports |          | Map of host ports to container ports. See [Ports Map](#ports-map)       |
 
 #### Memory Limits
 
@@ -311,15 +318,15 @@ reverse of the start order.
 
 ### Container Configuration
 
-| Parameter | Required | Description                                          |
-|----------:|:--------:|:-----------------------------------------------------|
-|      name |          | Name of the container. Defaults to container's alias |
+| Parameter | Required | Description                                                             |
+|----------:|:--------:|:------------------------------------------------------------------------|
+|      name |          | Name of the container. Defaults to `${network.name}.${container.alias}` |
 
 ### Network Configuration
 
-| Parameter | Required | Description                                |
-|----------:|:--------:|:-------------------------------------------|
-|      name |          | Name of network.  Defaults to `artifactId` |
+| Parameter | Required | Description                                                            |
+|----------:|:--------:|:-----------------------------------------------------------------------|
+|      name |          | Name of network.  Defaults to `${JOB_NAME}` or `${project.artifactId}` |
 
 # Examples
 
@@ -377,7 +384,7 @@ reverse of the start order.
             <goal>container-rm</goal>
           </goals>
           <configuration>
-            <containers>
+            <containers combine.children="append">
               <uat>
                 <image>artifactory.xmple.com/dev/${project.artifactId}:${project.version}</image>
                 <requires>s3</requires>
