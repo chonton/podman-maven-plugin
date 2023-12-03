@@ -5,8 +5,8 @@ import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 class NetworkCmd extends Cmd {
 
-  NetworkCmd(PodmanGoal goal) {
-    super(goal);
+  NetworkCmd(PodmanGoal goal, String name) {
+    super(goal, name);
     addCmd("network");
   }
 }

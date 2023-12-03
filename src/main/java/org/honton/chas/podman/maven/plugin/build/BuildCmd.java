@@ -8,8 +8,8 @@ import java.util.Set;
 import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 public class BuildCmd extends Cmd {
-  public BuildCmd(PodmanBuild goal) {
-    super(goal);
+  public BuildCmd(PodmanBuild goal, String name) {
+    super(goal, name);
     addCmd("build");
   }
 

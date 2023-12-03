@@ -6,7 +6,7 @@ import org.honton.chas.podman.maven.plugin.config.LogConfig;
 class LogsCmd extends Cmd {
 
   LogsCmd(PodmanContainer<?> goal, LogConfig logConfig, String containerName) {
-    super(goal);
+    super(goal, containerName);
     addCmd("logs");
     addCmd("--follow");
     if (logConfig != null && logConfig.timestamps) {

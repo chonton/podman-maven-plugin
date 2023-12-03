@@ -1,10 +1,10 @@
 package org.honton.chas.podman.maven.plugin.container;
 
 import com.fasterxml.jackson.jr.ob.JSON;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -12,6 +12,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
+import org.honton.chas.podman.maven.plugin.config.LogConfig;
 
 /**
  * Create containers
@@ -32,40 +33,44 @@ public class PodmanContainerRun extends PodmanContainer<ContainerConfig> {
   private void createNetwork(String networkName) {
     NetworkCmd cmdLine = new NetworkCreateCmd(this, network, networkName);
 
-    int exitCode = execYieldInt(cmdLine.getCommand());
+    int exitCode = execYieldInt(cmdLine);
     if (exitCode != 0 && !errorOutput.toString().contains("network already exists")) {
       throw new MojoExecutionException("podman exit value: " + exitCode);
     }
   }
 
   @SneakyThrows
-  private void runContainer(ContainerConfig containerConfig, String networkName) {
-    ContainerRunCmd runCommandLine =
-        new ContainerRunCmd(this, containerConfig, getLog()::warn, networkName);
+  private void runContainer(ContainerConfig config, String networkName) {
+    ContainerRunCmd runCommandLine = new ContainerRunCmd(this, config, getLog()::warn, networkName);
 
-    String containerId = execYieldString(runCommandLine.getCommand());
-    setProperty(containerIdPropertyName(containerConfig), containerId);
+    String containerId = execYieldString(runCommandLine);
+    setProperty(containerIdPropertyName(config), containerId);
 
     Map<Integer, String> portToPropertyName = runCommandLine.getPortToPropertyName();
     if (!portToPropertyName.isEmpty()) {
       setAssignedPorts(containerId, portToPropertyName);
     }
 
-    new ExecConfigHelper<>(this)
-        .startAndWait(logConfig -> new LogsCmd(this, logConfig, containerId), containerConfig);
+    LogConfig logConfig = config.log;
+    BufferedWriter bufferedWriter = createBufferedWriter(logConfig, config.alias);
+    new ExecHelper(this, config.alias)
+        .startAndWait(
+            () -> new LogsCmd(this, logConfig, containerId),
+            config.wait,
+            bufferedWriter,
+            project.getProperties());
   }
 
   private void setAssignedPorts(String containerId, Map<Integer, String> portToPropertyName)
-      throws MojoExecutionException, IOException, ExecutionException, InterruptedException {
+      throws MojoExecutionException, IOException {
     String inspect =
         execYieldString(
-            new Cmd(this)
+            new Cmd(this, containerId)
                 .addCmd("container")
                 .addCmd("inspect")
                 .addParameter(containerId)
                 .addParameter("--format")
-                .addParameter("{{.HostConfig}}")
-                .getCommand());
+                .addParameter("{{.HostConfig}}"));
 
     Map<String, List<PortBinding>> portToBindings =
         JSON.std.beanFrom(HostConfig.class, inspect).PortBindings;

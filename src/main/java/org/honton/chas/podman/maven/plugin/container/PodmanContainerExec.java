@@ -1,5 +1,6 @@
 package org.honton.chas.podman.maven.plugin.container;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.List;
 import lombok.SneakyThrows;
@@ -23,10 +24,12 @@ public class PodmanContainerExec extends PodmanContainer<ExecConfig> {
   }
 
   @SneakyThrows
-  private void runContainer(ExecConfig containerConfig) {
+  private void runContainer(ExecConfig config) {
     ContainerExecCmd execCommandLine =
-        new ContainerExecCmd(this, containerConfig, getLog()::warn, containerId(containerConfig));
+        new ContainerExecCmd(this, config, getLog()::warn, containerId(config));
 
-    new ExecConfigHelper<>(this).startAndWait(logConfig -> execCommandLine, containerConfig);
+    BufferedWriter bufferedWriter = createBufferedWriter(config.log, null);
+    new ExecHelper(this, config.alias)
+        .startAndWait(() -> execCommandLine, config.wait, bufferedWriter, project.getProperties());
   }
 }

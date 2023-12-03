@@ -2,13 +2,16 @@ package org.honton.chas.podman.maven.plugin.cmdline;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.honton.chas.podman.maven.plugin.config.ConnectionCfg;
 
+@RequiredArgsConstructor
 public class Cmd {
   protected final List<String> command;
+  public final String name;
 
-  public Cmd(ConnectionCfg goal) {
-    command = new ArrayList<>();
+  public Cmd(ConnectionCfg goal, String name) {
+    this(new ArrayList<>(), name);
     command.add(goal.getCli());
 
     if (goal.getUrl() != null) {

@@ -6,7 +6,7 @@ import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
 class ContainerRmCmd extends Cmd {
 
   ContainerRmCmd(PodmanContainerRm goal, IdentityConfig containerConfig) {
-    super(goal);
+    super(goal, containerConfig.alias);
     addCmd("container");
     addCmd("rm");
     addParameter("-f");

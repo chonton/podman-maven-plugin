@@ -46,12 +46,11 @@ public class PodmanImportVolume extends PodmanGoal {
     }
 
     executeCommand(
-        new Cmd(this)
+        new Cmd(this, volume)
             .addCmd("volume")
             .addParameter("import")
             .addParameter(volume)
-            .addParameter(tar.getAbsolutePath())
-            .getCommand());
+            .addParameter(tar.getAbsolutePath()));
   }
 
   private void tarArchive(File src, File dst) throws IOException {

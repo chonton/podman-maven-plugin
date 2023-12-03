@@ -1,7 +1,6 @@
 package org.honton.chas.podman.maven.plugin.login;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -46,14 +45,13 @@ public class PodmanLogin extends PodmanGoal {
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     Server server = getAuthInfo();
-    List<String> command =
-        new Cmd(this)
+    Cmd command =
+        new Cmd(this, "login")
             .addCmd("login")
             .addParameter("--username")
             .addParameter(server.getUsername())
             .addParameter("--password-stdin")
-            .addParameter(registry)
-            .getCommand();
+            .addParameter(registry);
     executeCommand(command, server.getPassword());
   }
 

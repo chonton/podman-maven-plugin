@@ -281,10 +281,10 @@ tcp port. Each entry is the value of an exposed container tcp port.
 
 #### Log Config
 
-|  Parameter | Required | Description                                                           |
-|-----------:|:--------:|:----------------------------------------------------------------------|
-|       file |          | Name of file to receive logs. Default is `target/podman/${alias}.log` |
-| timestamps |          | Display timestamp on each line. Default is **false**.                 |
+|  Parameter | Required | Description                                                              |
+|-----------:|:--------:|:-------------------------------------------------------------------------|
+|       file |          | Name of file to receive logs. Default is `target/container/${alias}.log` |
+| timestamps |          | Display timestamp on each line. Default is **false**.                    |
 
 #### Wait Config
 
@@ -373,7 +373,7 @@ reverse of the start order.
 <build>
   <properties>
     <!-- override with -D build.platform=linux/amd64,linux/arm64 for multi-architecture build -->
-    <build.platform></build.platform>
+    <build.platform/>
   </properties>
 
   <pluginManagement>

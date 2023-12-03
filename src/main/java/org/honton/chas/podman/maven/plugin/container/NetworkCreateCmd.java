@@ -6,7 +6,7 @@ import org.honton.chas.podman.maven.plugin.config.NetworkConfig;
 public class NetworkCreateCmd extends NetworkCmd {
 
   public NetworkCreateCmd(PodmanGoal goal, NetworkConfig network, String networkName) {
-    super(goal);
+    super(goal, networkName);
 
     addCmd("create");
     if (network != null && network.driver != null) {

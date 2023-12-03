@@ -43,7 +43,7 @@ public class PodmanBuild extends PodmanContainerfile {
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     BuildCmd buildCmd =
-        new BuildCmd(this).addArgs(buildArguments).addPlatformAndImage(platforms, image);
+        new BuildCmd(this, image).addArgs(buildArguments).addPlatformAndImage(platforms, image);
 
     String cf = containerFile();
     if (!defaultContainerFile().equals(cf)) {
@@ -65,12 +65,12 @@ public class PodmanBuild extends PodmanContainerfile {
     String tarLocation = shortestPath(path);
 
     executeCommand(
-        new Cmd(this)
+        new Cmd(this, image)
             .addCmd("save")
             .addParameter("--output")
             .addParameter(tarLocation)
             .addParameter(image));
 
-    executeCommand(List.of("docker", "load", "-i", tarLocation));
+    executeCommand(new Cmd(List.of("docker", "load", "-i", tarLocation), image));
   }
 }

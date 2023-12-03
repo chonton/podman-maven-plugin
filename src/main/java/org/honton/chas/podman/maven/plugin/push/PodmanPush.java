@@ -24,6 +24,6 @@ public class PodmanPush extends PodmanGoal {
   @Override
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
-    executeCommand(new Cmd(this).addCmd("push").addParameter(image));
+    executeCommand(new Cmd(this, image).addCmd("push").addParameter(image));
   }
 }

@@ -1,6 +1,11 @@
 package org.honton.chas.podman.maven.plugin.container;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -8,6 +13,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
 import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
+import org.honton.chas.podman.maven.plugin.config.LogConfig;
 import org.honton.chas.podman.maven.plugin.config.NetworkConfig;
 
 public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGoal {
@@ -66,5 +72,25 @@ public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGo
       return containerId;
     }
     return containerConfig.name;
+  }
+
+  BufferedWriter createBufferedWriter(LogConfig logConfig, String alias)
+      throws IOException, MojoExecutionException {
+    if (logConfig == null) {
+      return null;
+    }
+
+    Path path;
+    if (logConfig.file != null) {
+      path = Path.of(logConfig.file);
+    } else if (alias != null) {
+      path = project.getBasedir().toPath().resolve(Path.of("target", "container", alias + ".log"));
+    } else {
+      throw new MojoExecutionException("container exec log requires file parameter");
+    }
+
+    Files.createDirectories(path.getParent());
+    return Files.newBufferedWriter(
+        path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
   }
 }

@@ -10,7 +10,7 @@ import org.honton.chas.podman.maven.plugin.config.ExecConfig;
 abstract class ContainerEnvCmd extends Cmd {
 
   public ContainerEnvCmd(ConnectionCfg goal, ExecConfig execConfig, Consumer<String> warn) {
-    super(goal);
+    super(goal, execConfig.name);
     addCmd("container");
     addCmd(subCommand());
     addEnvironment(execConfig, warn);
