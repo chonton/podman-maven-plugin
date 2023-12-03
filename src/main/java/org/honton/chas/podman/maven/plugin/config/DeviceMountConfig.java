@@ -11,8 +11,7 @@ public class DeviceMountConfig {
   public String source;
 
   /** Absolute path of container device name */
-  @Parameter(required = false)
-  public String destination;
+  @Parameter public String destination;
 
   /** Container read access */
   @Parameter(defaultValue = "true")

@@ -7,12 +7,16 @@ import org.apache.maven.plugins.annotations.Parameter;
 /** Mounts configuration */
 @ToString
 public class MountsConfig {
+
   /** List of bindings from host to container */
   @Parameter public List<BindMountConfig> binds;
 
   /** List of Temporary file systems */
   @Parameter public List<TempFsMountConfig> temps;
 
-  /** List of volume mappings. */
+  /** List of Volume mappings. */
   @Parameter public List<VolumeMountConfig> volumes;
+
+  /** List of Device mappings */
+  @Parameter public List<DeviceMountConfig> devices;
 }

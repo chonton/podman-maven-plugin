@@ -1,6 +1,6 @@
 # podman-maven-plugin
 
-Use podman to build, push, and run images. This plugin has eight goals:
+Use podman to build, push, and run images. This plugin has nine goals:
 
 1. [Login to registry](#login-goal)
 2. [Create Containerfile from base image and copy directives](#containerfile-goal)
@@ -8,7 +8,8 @@ Use podman to build, push, and run images. This plugin has eight goals:
 4. [Push image to registry](#push-goal)
 5. [Create a volume](#volume-create-goal)
 6. [Import volume contents](#volume-import-goal)
-7. [Run image in container](#container-run-goal)
+7. [Run image as container](#container-run-goal)
+7. [Exec command in existing container](#container-exec-goal)
 8. [Remove container](#container-rm-goal)
 
 # Rationale
@@ -76,18 +77,21 @@ information about Containerfile syntax.
 
 ### Containerfile Configuration
 
-|  Parameter | Required | Description                                                      |
-|-----------:|:--------:|:-----------------------------------------------------------------|
-|        cmd |          | Default [ShellOrExec Config](#shellorexec-config) command        |
-| entrypoint |          | Default [ShellOrExec Config](#shellorexec-config) entrypoint     |
-|       from |    ✓     | Base image for subsequent instructions                           |
-|     layers |          | List of [Layer Config](#layer-config) to apply                   |
-|     labels |          | Map of labels to apply to image                                  |
-|        env |          | Map of environment variables that are set when container runs    |
-|       user |          | User\[:Group] that runs inside the container. May be uid or name |
-|     expose |          | List of ports that the container will expose                     |
-|    volumes |          | List of locations in the image filesystem of external mounts     |
-|    workDir |          | Working directory for the container's process                    |
+|     Parameter | Required | Description                                                                               |
+|--------------:|:--------:|:------------------------------------------------------------------------------------------|
+|           cli |          | Container command, default is **podman**. (**docker** is supported)                       |
+| containerfile |    ✓     | Instruction file relative to contextDir, default is **Containerfile** (or **Dockerfile**) |
+|    contextDir |    ✓     | Directory with build content, default is `${project.build.directory}/contextDir`          |
+|           cmd |          | Default [ShellOrExec Config](#shellorexec-config) command                                 |
+|    entrypoint |          | Default [ShellOrExec Config](#shellorexec-config) entrypoint                              |
+|          from |    ✓     | Base image for subsequent instructions                                                    |
+|        layers |          | List of [Layer Config](#layer-config) to apply                                            |
+|        labels |          | Map of labels to apply to image                                                           |
+|           env |          | Map of environment variables that are set when container runs                             |
+|          user |          | User\[:Group] that runs inside the container. May be uid or name                          |
+|        expose |          | List of ports that the container will expose                                              |
+|       volumes |          | List of locations in the image filesystem of external mounts                              |
+|       workDir |          | Working directory for the container's process                                             |
 
 ### Layer Config
 
@@ -112,17 +116,18 @@ the **package** phase. This goal executes `podman build` with the proper paramet
 
 ### Build Configuration
 
-|       Parameter | Required | Description                                                                      |
-|----------------:|:--------:|:---------------------------------------------------------------------------------|
-|  buildArguments |          | Map of build arguments                                                           |
-|      connection |          | Remote podman connection name                                                    |
-|   containerfile |    ✓     | Instruction file relative to contextDir, default is *Containerfile*              |
-|      contextDir |    ✓     | Directory with build content, default is *${project.build.directory}/contextDir* |
-|           image |    ✓     | Fully qualified image name; must include *registry/repository:version*           |
-| loadDockerCache |          | If set to true, load the local docker image cache with resulting image           |
-|       platforms |          | List of platforms.  Each element may contain comma separated *os/arch*           |
-|            skip |          | Skip build                                                                       |
-|             url |          | Url of podman remote service                                                     |
+|       Parameter | Required | Description                                                                               |
+|----------------:|:--------:|:------------------------------------------------------------------------------------------|
+|  buildArguments |          | Map of build arguments                                                                    |
+|      connection |          | Remote podman connection name                                                             |
+|             cli |          | Container command, default is **podman**. (**docker** is supported)                       |
+|   containerfile |    ✓     | Instruction file relative to contextDir, default is **Containerfile** (or **Dockerfile**) |
+|      contextDir |    ✓     | Directory with build content, default is `${project.build.directory}/contextDir`          |
+|           image |    ✓     | Fully qualified image name; must include *registry/repository:version*                    |
+| loadDockerCache |          | If set to true, load the local docker image cache with resulting image                    |
+|       platforms |          | List of platforms.  Each element may contain comma separated *os/arch*                    |
+|            skip |          | Skip build                                                                                |
+|             url |          | Url of podman remote service                                                              |
 
 ## Push Goal
 
@@ -181,50 +186,38 @@ the container is removed or maven exits.
 
 ### Container-Run Configuration
 
-|  Parameter | Required | Description                                                       |
-|-----------:|:--------:|:------------------------------------------------------------------|
-| connection |          | Remote podman connection name                                     |
-| containers |    ✓     | Map of container aliases to [Container Config](#container-config) |
-|    devices |          | List of [Device Config](#device-config)                           |
-|    network |          | [Network Config](#network-config)                                 |
-|       skip |          | Skip container-run                                                |
-|        url |          | Url of podman remote service                                      |
-
-#### Device Config
-
-|   Parameter | Required | Description                                               |
-|------------:|:--------:|:----------------------------------------------------------|
-|      source |    ✓     | Absolute path of host device                              |
-| destination |          | Absolute path of container device. Defaults to host path. |
-|      mknode |          | Container allowed to mknod. Defaults to true              |
-|        read |          | Container allowed to read. Defaults to true               |
-|       write |          | Container allowed to write. Defaults to true              |
+|  Parameter | Required | Description                                           |
+|-----------:|:--------:|:------------------------------------------------------|
+| connection |          | Remote podman connection name                         |
+| containers |    ✓     | Map of container alias to [Exec Config](#exec-config) |
+|       skip |          | Skip container-run                                    |
+|        url |          | Url of podman remote service                          |
 
 ### Network Config
 
-| Parameter | Required | Description                                                            |
-|----------:|:--------:|:-----------------------------------------------------------------------|
-|      name |          | Name of network.  Defaults to `${JOB_NAME}` or `${project.artifactId}` |
-|    driver |          | Network driver name.  Defaults to **bridge**                           |
+| Parameter | Required | Description                                                           |
+|----------:|:--------:|:----------------------------------------------------------------------|
+|      name |          | Name of network.  Default is `${JOB_NAME}` or `${project.artifactId}` |
+|    driver |          | Network driver name.  Default is **bridge**                           |
 
 ### Container Config
 
-|  Parameter | Required | Description                                                             |
-|-----------:|:--------:|:------------------------------------------------------------------------|
-|       name |          | Name of the container. Defaults to `${network.name}.${container.alias}` |
-|   requires |          | Comma separated dependent container names                               |
-|      image |    ✓     | Fully qualified image name to run                                       |
-|       wait |          | Post launch [Wait Config](#wait-config)                                 |
-|        log |          | Post launch [Log Config](#log-config)                                   |
-|     memory |          | Memory limit.                                                           |
-|     memory |          | Memory plus swap limit.                                                 |
-|        cmd |          | Override image command to execute                                       |
-|       args |          | Override image arguments for command                                    |
-| entrypoint |          | Override image entrypoint                                               |
-|    envFile |          | File containing environment variables that are set when container runs  |
-|        env |          | Map of environment variables that are set when container runs           |
-|     mounts |          | [Mount Config](#mount-config)                                           |
-|      ports |          | Map of host ports to container ports. See [Ports Map](#ports-map)       |
+|  Parameter | Required | Description                                                            |
+|-----------:|:--------:|:-----------------------------------------------------------------------|
+|       name |          | Name of the container. Default is `${network.name}.${container.alias}` |
+|   requires |          | Comma separated dependent container names                              |
+|      image |    ✓     | Fully qualified image name to run                                      |
+|       wait |          | Post launch [Wait Config](#wait-config)                                |
+|        log |          | Post launch [Log Config](#log-config)                                  |
+|     memory |          | Memory limit.                                                          |
+|     memory |          | Memory plus swap limit.                                                |
+|        cmd |          | Override image command to execute                                      |
+|       args |          | Override image arguments for command                                   |
+| entrypoint |          | Override image entrypoint                                              |
+|    envFile |          | File containing environment variables that are set when container runs |
+|        env |          | Map of environment variables that are set when container runs          |
+|     mounts |          | [Mount Config](#mount-config)                                          |
+|      ports |          | Map of host port to container port. See [Ports Map](#ports-map)        |
 
 #### Memory Limits
 
@@ -236,6 +229,7 @@ Memory limit must be a number followed by unit of 'b' (bytes), 'k' (kibibytes), 
 | Parameter | Required | Description                                       |
 |----------:|:--------:|:--------------------------------------------------|
 |     binds |          | List of [BindMount Config](#bindmount-config)     |
+|   devices |          | List of [Device Config](#device-config)           |
 |     temps |          | List of [TempFsMount Config](#tempfsmount-config) |
 |   volumes |          | List of [VolumeMount Config](#volumemount-config) |
 
@@ -245,7 +239,7 @@ Memory limit must be a number followed by unit of 'b' (bytes), 'k' (kibibytes), 
 |------------:|:--------:|:-------------------------------------------|
 |      source |    ✓     | Absolute path of host directory            |
 | destination |    ✓     | Absolute path of container directory       |
-|    readonly |          | Defaults to false                          |
+|    readonly |          | Default is **false**                       |
 | permissions |          | Permissions of directories created on host |
 
 ##### Host Directory
@@ -254,6 +248,16 @@ Bind mounts will create the directory on the host if it does not exist. The file
 may be defined using
 [Symbolic](https://en.wikipedia.org/wiki/File-system_permissions#Symbolic_notation) or
 [Numeric](https://en.wikipedia.org/wiki/File-system_permissions#Numeric_notation) notation.
+
+#### Device Config
+
+|   Parameter | Required | Description                                               |
+|------------:|:--------:|:----------------------------------------------------------|
+|      source |    ✓     | Absolute path of host device                              |
+| destination |          | Absolute path of container device. Default is `${source}` |
+|      mknode |          | Container allowed to mknod. Default is **true**           |
+|        read |          | Container allowed to read. Default is **true**            |
+|       write |          | Container allowed to write. Default is **true**           |
 
 #### TempFsMount Config
 
@@ -267,37 +271,68 @@ may be defined using
 |------------:|:--------:|:-------------------------------------|
 |      source |    ✓     | Volume name                          |
 | destination |    ✓     | Absolute path of container directory |
-|    readonly |          | Defaults to false                    |
+|    readonly |          | Default is **false**                 |
 
 #### Ports Map
 
-Key is the name of a maven property. If property is set, then that value is used as the host tcp
-\[interface:]port; otherwise the property is set to the value of the dynamically assigned host tcp
-port. Each entry is the value of an exposed container tcp port.
+Key is the name of a maven property. If property is already set, then that value is used as the host
+tcp \[interface:]port; otherwise, the property is set to the value of the dynamically assigned host
+tcp port. Each entry is the value of an exposed container tcp port.
 
 #### Log Config
 
-|  Parameter | Required | Description                                                                     |
-|-----------:|:--------:|:--------------------------------------------------------------------------------|
-|       file |          | Name of file to receive logs. Defaults to `target/podman/<container alias>.log` |
-| timestamps |          | Display timestamp on each line. Defaults to false.                              |
+|  Parameter | Required | Description                                                           |
+|-----------:|:--------:|:----------------------------------------------------------------------|
+|       file |          | Name of file to receive logs. Default is `target/podman/${alias}.log` |
+| timestamps |          | Display timestamp on each line. Default is **false**.                 |
 
 #### Wait Config
 
-| Parameter | Required | Description                                    |
-|----------:|:--------:|:-----------------------------------------------|
-|      http |          | [HttpWait Config](#httpwait-config)            |
-|       log |          | String to detect in container log.             |
-|      time |          | Seconds to wait before failing. Default is 60. |
+| Parameter | Required | Description                                        |
+|----------:|:--------:|:---------------------------------------------------|
+|      http |          | [HttpWait Config](#httpwait-config)                |
+|       log |          | String to detect in container log.                 |
+|      time |          | Seconds to wait before failing. Default is **60**. |
 
 #### HttpWait Config
 
-| Parameter | Required | Description                                        |
-|----------:|:--------:|:---------------------------------------------------|
-|       url |    ✓     | Url to invoke                                      |
-|    method |          | Http verb to use. Default is 'GET'.                |
-|    status |          | Expected status code. Default is 200.              |
-|  interval |          | Interval in seconds between probes. Default is 15. |
+| Parameter | Required | Description                                            |
+|----------:|:--------:|:-------------------------------------------------------|
+|       url |    ✓     | Url to invoke                                          |
+|    method |          | Http verb to use. Default is **GET**.                  |
+|    status |          | Expected status code. Default is **200**.              |
+|  interval |          | Interval in seconds between probes. Default is **15**. |
+
+## Container-Exec Goal
+
+The [container-exec](https://chonton.github.io/podman-maven-plugin/container-exec-mojo.html) goal
+binds by default to the **integration-test** phase. This goal uses `podman container exec` to run
+a command in existing containers.
+
+After launching, the goal will wait for the `wait` conditions to be satisfied. When executing in
+multiple containers, the container ordering is determined by the `requires` parameter. The `logs`
+configuration instructs the goal to collect container logs until the command is complete.
+
+### Container-Exec Configuration
+
+|  Parameter | Required | Description                                           |
+|-----------:|:--------:|:------------------------------------------------------|
+| connection |          | Remote podman connection name                         |
+| containers |    ✓     | Map of container alias to [Exec Config](#exec-config) |
+|       skip |          | Skip container-exec                                   |
+|        url |          | Url of podman remote service                          |
+
+### Exec Config
+
+|  Parameter | Required | Description                                                              |
+|-----------:|:--------:|:-------------------------------------------------------------------------|
+|   requires |          | Comma separated dependent container names                                |
+|       wait |          | Post launch [Wait Config](#wait-config)                                  |
+|        log |          | Post launch [Log Config](#log-config)                                    |
+|        cmd |    ✓     | Command to execute                                                       |
+|       args |          | Arguments for command                                                    |
+|    envFile |          | File containing environment variables that are set for command execution |
+|        env |          | Map of environment variables that are set for command execution          |
 
 ## Container-Rm Goal
 
@@ -308,25 +343,26 @@ reverse of the start order.
 
 ### Container-Rm Configuration
 
-|  Parameter | Required | Description                                                              |
-|-----------:|:--------:|:-------------------------------------------------------------------------|
-| connection |          | Remote podman connection name                                            |
-| containers |    ✓     | Map of container aliases to [Container Config](#container-configuration) |
-|    network |          | [Network Config](#network-configuration)                                 |
-|       skip |          | Skip container-rm                                                        |
-|        url |          | Url of podman remote service                                             |
+|  Parameter | Required | Description                                                     |
+|-----------:|:--------:|:----------------------------------------------------------------|
+| connection |          | Remote podman connection name                                   |
+| containers |    ✓     | Map of container aliases to [Identity Config](#identity-config) |
+|    network |          | [Network Config](#network-configuration)                        |
+|       skip |          | Skip container-rm                                               |
+|        url |          | Url of podman remote service                                    |
 
-### Container Configuration
+### Identity Config
 
-| Parameter | Required | Description                                                             |
-|----------:|:--------:|:------------------------------------------------------------------------|
-|      name |          | Name of the container. Defaults to `${network.name}.${container.alias}` |
+|  Parameter | Required | Description                               |
+|-----------:|:--------:|:------------------------------------------|
+|   requires |          | Comma separated dependent container names |
+
 
 ### Network Configuration
 
-| Parameter | Required | Description                                                            |
-|----------:|:--------:|:-----------------------------------------------------------------------|
-|      name |          | Name of network.  Defaults to `${JOB_NAME}` or `${project.artifactId}` |
+| Parameter | Required | Description                                                           |
+|----------:|:--------:|:----------------------------------------------------------------------|
+|      name |          | Name of network.  Default is `${JOB_NAME}` or `${project.artifactId}` |
 
 # Examples
 

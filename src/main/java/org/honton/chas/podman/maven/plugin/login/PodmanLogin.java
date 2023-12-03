@@ -2,6 +2,7 @@ package org.honton.chas.podman.maven.plugin.login;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -41,7 +42,9 @@ public class PodmanLogin extends PodmanGoal {
   @Parameter(defaultValue = "${settings}", required = true, readonly = true)
   private Settings settings;
 
-  protected final void doExecute() throws IOException, MojoExecutionException {
+  @Override
+  protected final void doExecute()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     Server server = getAuthInfo();
     List<String> command =
         new CommandLine(this)

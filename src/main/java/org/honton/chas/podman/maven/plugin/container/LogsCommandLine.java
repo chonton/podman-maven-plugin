@@ -5,11 +5,11 @@ import org.honton.chas.podman.maven.plugin.config.LogConfig;
 
 class LogsCommandLine extends CommandLine {
 
-  LogsCommandLine(PodmanContainerRun goal, LogConfig logConfig, String containerName) {
+  LogsCommandLine(PodmanContainer<?> goal, LogConfig logConfig, String containerName) {
     super(goal);
     addCmd("logs");
     addCmd("--follow");
-    if (logConfig.timestamps) {
+    if (logConfig != null && logConfig.timestamps) {
       addParameter("--timestamps");
     }
     addParameter(containerName);

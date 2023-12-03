@@ -12,20 +12,19 @@ import lombok.ToString;
 import lombok.experimental.UtilityClass;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
+import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
 
 @UtilityClass
-class ContainerConfigHelper {
+class IdentityConfigHelper {
 
-  public List<ContainerConfig> order(
-      String networkName, Map<String, ContainerConfig> containers, Log log)
-      throws MojoExecutionException {
+  public <T extends IdentityConfig> List<T> order(
+      String networkName, Map<String, T> containers, Log log) throws MojoExecutionException {
     if (containers == null) {
       return List.of();
     }
 
     AtomicBoolean failed = new AtomicBoolean();
-    Map<String, RequirementsNode> aliasToNode = new HashMap<>();
+    Map<String, RequirementsNode<T>> aliasToNode = new HashMap<>();
     containers.forEach(
         (alias, containerConfig) -> {
           if (containerConfig == null) {
@@ -36,7 +35,7 @@ class ContainerConfigHelper {
             if (containerConfig.name == null) {
               containerConfig.name = networkName + '.' + alias;
             }
-            aliasToNode.put(alias, new RequirementsNode(alias, containerConfig));
+            aliasToNode.put(alias, new RequirementsNode<>(alias, containerConfig));
           }
         });
     if (failed.get()) {
@@ -48,7 +47,7 @@ class ContainerConfigHelper {
         (alias, node) ->
             node.requires.forEach(
                 require -> {
-                  RequirementsNode requirements = aliasToNode.get(require);
+                  RequirementsNode<T> requirements = aliasToNode.get(require);
                   if (requirements == null) {
                     throw new IllegalArgumentException(
                         "Missing definition for require " + require + " on release " + alias);
@@ -56,9 +55,9 @@ class ContainerConfigHelper {
                   requirements.addDependent(require, node);
                 }));
 
-    List<ContainerConfig> releaseOrder = new ArrayList<>();
+    List<T> releaseOrder = new ArrayList<>();
     while (!aliasToNode.isEmpty()) {
-      List<RequirementsNode> solved =
+      List<RequirementsNode<T>> solved =
           aliasToNode.values().stream()
               .filter(RequirementsNode::isSolved)
               .collect(Collectors.toList());
@@ -84,18 +83,18 @@ class ContainerConfigHelper {
   }
 
   @ToString(of = {"alias", "requires"})
-  private static class RequirementsNode {
+  private static class RequirementsNode<T extends IdentityConfig> {
 
     final String alias;
-    final ContainerConfig containerConfig;
+    final T containerConfig;
 
     /** The containers that this container requires before deployment */
     final Set<String> requires;
 
     /** The containers that depend upon this container */
-    final Map<String, RequirementsNode> depends;
+    final Map<String, RequirementsNode<T>> depends;
 
-    public RequirementsNode(String alias, ContainerConfig containerConfig) {
+    public RequirementsNode(String alias, T containerConfig) {
       this.alias = alias;
       this.containerConfig = containerConfig;
       this.requires = asSet(containerConfig.requires);
@@ -120,7 +119,7 @@ class ContainerConfigHelper {
       requires.remove(name);
     }
 
-    public void addDependent(String name, RequirementsNode value) {
+    public void addDependent(String name, RequirementsNode<T> value) {
       depends.put(name, value);
     }
   }

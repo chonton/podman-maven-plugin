@@ -1,32 +1,16 @@
 package org.honton.chas.podman.maven.plugin.config;
 
-import java.util.List;
 import java.util.Map;
 import lombok.ToString;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /** Container configuration */
-@ToString
-public class ContainerConfig {
-
-  /** Network alias of the container */
-  public String alias;
-
-  /** Name of the container. Defaults to `${network.name}.${container.alias}` */
-  @Parameter public String name;
-
-  /** Comma separated dependent container names */
-  @Parameter public String requires;
+@ToString(callSuper = true)
+public class ContainerConfig extends ExecConfig {
 
   /** Image to run */
   @Parameter(required = true)
   public String image;
-
-  /** Post launch wait configuration */
-  @Parameter public WaitConfig wait;
-
-  /** Post launch log configuration */
-  @Parameter public LogConfig log;
 
   /**
    * Memory limit. Must be number followed by unit of 'b' (bytes), 'k' (kibibytes), 'm' (mebibytes),
@@ -40,20 +24,8 @@ public class ContainerConfig {
    */
   @Parameter public String memorySwap;
 
-  /** Override image command to execute */
-  @Parameter public String cmd;
-
-  /** Override image arguments for command */
-  @Parameter public List<String> args;
-
   /** Override image entrypoint */
   @Parameter public String entrypoint;
-
-  /** File containing environment variables that are set when container runs */
-  @Parameter public String envFile;
-
-  /** Map of environment variables that are set when container runs */
-  @Parameter public Map<String, String> env;
 
   /** Volume mappings */
   @Parameter public MountsConfig mounts;

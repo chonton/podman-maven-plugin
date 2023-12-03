@@ -1,23 +1,21 @@
 package org.honton.chas.podman.maven.plugin.containerfile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.honton.chas.podman.maven.plugin.PodmanContainerfile;
 import org.honton.chas.podman.maven.plugin.config.LayerConfig;
 import org.honton.chas.podman.maven.plugin.config.ShellOrExecConfig;
 
 /** Create a Containerfile. */
 @Mojo(name = "containerfile", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, threadSafe = true)
-public class CreateContainerfile extends AbstractMojo {
+public class CreateContainerfile extends PodmanContainerfile {
 
   /** Base image for subsequent instructions */
   @Parameter(required = true)
@@ -50,20 +48,7 @@ public class CreateContainerfile extends AbstractMojo {
   /** Working directory for the container's process */
   @Parameter String workdir;
 
-  @Parameter(
-      defaultValue = "${project.build.directory}/contextDir/Containerfile",
-      required = true,
-      readonly = true)
-  File destFile;
-
-  public final void execute() throws MojoFailureException {
-    try {
-      doExecute();
-    } catch (IOException e) {
-      throw new MojoFailureException(e.getMessage(), e);
-    }
-  }
-
+  @Override
   protected void doExecute() throws IOException {
     StringBuilder sb = new StringBuilder();
     if (from != null) {
@@ -107,9 +92,9 @@ public class CreateContainerfile extends AbstractMojo {
       sb.append("WORKDIR ").append(workdir).append('\n');
     }
 
-    Path destFilePath = destFile.toPath();
-    Files.createDirectories(destFilePath.getParent());
-    Files.writeString(destFilePath, sb, StandardCharsets.UTF_8);
+    Path contextPath = contextDir.toPath();
+    Files.createDirectories(contextPath);
+    Files.writeString(contextPath.resolve(containerFile()), sb, StandardCharsets.UTF_8);
   }
 
   private void writeShellOrExec(StringBuilder sb, String directive, ShellOrExecConfig shellOrExec) {

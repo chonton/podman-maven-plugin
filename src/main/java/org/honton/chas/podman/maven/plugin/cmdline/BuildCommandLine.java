@@ -1,6 +1,5 @@
 package org.honton.chas.podman.maven.plugin.cmdline;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -55,15 +54,8 @@ public class BuildCommandLine extends CommandLine {
   }
 
   public BuildCommandLine addContainerfile(String containerfile) {
-    if (!"Containerfile".equals(containerfile)) {
-      command.add("--file");
-      command.add(containerfile);
-    }
-    return this;
-  }
-
-  public BuildCommandLine addContext(Path contextDir) {
-    command.add("./" + contextDir.toString());
+    command.add("--file");
+    command.add(containerfile);
     return this;
   }
 }

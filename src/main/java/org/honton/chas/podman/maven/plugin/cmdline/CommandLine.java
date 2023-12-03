@@ -2,22 +2,22 @@ package org.honton.chas.podman.maven.plugin.cmdline;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.honton.chas.podman.maven.plugin.PodmanGoal;
+import org.honton.chas.podman.maven.plugin.config.ConnectionCfg;
 
 public class CommandLine {
   protected final List<String> command;
 
-  public CommandLine(PodmanGoal goal) {
+  public CommandLine(ConnectionCfg goal) {
     command = new ArrayList<>();
-    command.add("podman");
+    command.add(goal.getCli());
 
-    if (goal.url != null) {
+    if (goal.getUrl() != null) {
       command.add("--url");
-      command.add(goal.url);
+      command.add(goal.getUrl());
     }
-    if (goal.connection != null) {
+    if (goal.getConnection() != null) {
       command.add("--connection");
-      command.add(goal.connection);
+      command.add(goal.getConnection());
     }
   }
 

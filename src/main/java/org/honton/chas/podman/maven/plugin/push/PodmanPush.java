@@ -1,6 +1,7 @@
 package org.honton.chas.podman.maven.plugin.push;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -20,7 +21,9 @@ public class PodmanPush extends PodmanGoal {
   @Parameter(required = true)
   String image;
 
-  protected final void doExecute() throws IOException, MojoExecutionException {
+  @Override
+  protected final void doExecute()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     executeCommand(new CommandLine(this).addCmd("push").addParameter(image));
   }
 }

@@ -2,6 +2,7 @@ package org.honton.chas.podman.maven.plugin.volume;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -21,7 +22,9 @@ public class PodmanCreateVolume extends PodmanGoal {
   @Parameter(required = true)
   String volume;
 
-  protected final void doExecute() throws IOException, MojoExecutionException {
+  @Override
+  protected final void doExecute()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     List<String> command =
         new CommandLine(this)
             .addCmd("volume")

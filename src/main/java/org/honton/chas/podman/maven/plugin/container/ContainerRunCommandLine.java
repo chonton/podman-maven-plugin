@@ -10,28 +10,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import lombok.Getter;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 import org.honton.chas.podman.maven.plugin.config.BindMountConfig;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
 import org.honton.chas.podman.maven.plugin.config.DeviceMountConfig;
 import org.honton.chas.podman.maven.plugin.config.TempFsMountConfig;
 import org.honton.chas.podman.maven.plugin.config.VolumeMountConfig;
 
-class ContainerRunCommandLine extends CommandLine {
-  private final ContainerConfig containerConfig;
+class ContainerRunCommandLine
+    extends ContainerExecCommandLine<ContainerRunCommandLine, ContainerConfig> {
   private final PodmanContainerRun goal;
   @Getter private final Map<Integer, String> portToPropertyName = new HashMap<>();
 
   ContainerRunCommandLine(PodmanContainerRun goal, ContainerConfig containerConfig) {
-    super(goal);
-    addCmd("container");
-    addCmd("run");
-    addParameter("--detach");
-    this.containerConfig = containerConfig;
+    super(goal, containerConfig);
     this.goal = goal;
+    addCmd(subCommand());
+    addParameter("--detach");
+  }
+
+  @Override
+  String subCommand() {
+    return "run";
   }
 
   public static Set<PosixFilePermission> posixFilePermissions(String permissions) {
@@ -56,18 +57,11 @@ class ContainerRunCommandLine extends CommandLine {
     return this;
   }
 
-  ContainerRunCommandLine addContainerCmd() throws MojoExecutionException {
+  public ContainerRunCommandLine addContainerImage() throws MojoExecutionException {
     if (containerConfig.image == null) {
       throw new MojoExecutionException("Missing image for container " + containerConfig.alias);
     }
     addParameter(containerConfig.image);
-
-    if (containerConfig.cmd != null) {
-      addParameter(containerConfig.cmd);
-    }
-    if (containerConfig.args != null) {
-      containerConfig.args.forEach(this::addParameter);
-    }
     return this;
   }
 
@@ -81,23 +75,12 @@ class ContainerRunCommandLine extends CommandLine {
       addParameter("--memory-swap").addParameter(containerConfig.memorySwap);
     }
 
+    if (containerConfig.workDir != null) {
+      addParameter("-w").addParameter(containerConfig.workDir);
+    }
+
     if (containerConfig.entrypoint != null) {
       addParameter("--entrypoint").addParameter(containerConfig.entrypoint);
-    }
-    return this;
-  }
-
-  ContainerRunCommandLine addEnvironment(Consumer<String> warn) {
-    if (containerConfig.envFile != null) {
-      if (Files.isReadable(Path.of(containerConfig.envFile))) {
-        addParameter("--env-file").addParameter(containerConfig.envFile);
-      } else {
-        warn.accept("ignoring env file " + containerConfig.envFile);
-      }
-    }
-
-    if (containerConfig.env != null) {
-      containerConfig.env.forEach((k, v) -> addParameter("--env").addParameter(k + '=' + v));
     }
     return this;
   }
@@ -142,6 +125,7 @@ class ContainerRunCommandLine extends CommandLine {
       addBinds(containerConfig.mounts.binds);
       addTemps(containerConfig.mounts.temps);
       addVolumes(containerConfig.mounts.volumes);
+      addDevices(containerConfig.mounts.devices);
     }
     return this;
   }

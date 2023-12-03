@@ -6,25 +6,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.honton.chas.podman.maven.plugin.PodmanGoal;
+import org.honton.chas.podman.maven.plugin.PodmanContainerfile;
 import org.honton.chas.podman.maven.plugin.cmdline.BuildCommandLine;
 import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
 
 /** Create a container image from the Containerfile directions and files from context */
 @Mojo(name = "build", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
-public class PodmanBuild extends PodmanGoal {
-
-  /** Directory containing source content for build */
-  @Parameter(required = true, defaultValue = "${project.build.directory}/contextDir")
-  File contextDir;
-
-  /** Build instruction file, relative to contextDir */
-  @Parameter(required = true, defaultValue = "Containerfile")
-  String containerfile;
+public class PodmanBuild extends PodmanContainerfile {
 
   /** Map of build arguments */
   @Parameter Map<String, String> buildArguments;
@@ -47,23 +40,30 @@ public class PodmanBuild extends PodmanGoal {
       defaultValue = "${project.build.directory}/dockerImage.tar")
   File dockerImageTar;
 
-  protected final void doExecute() throws IOException, MojoExecutionException {
-    executeCommand(
-        new BuildCommandLine(this)
-            .addArgs(buildArguments)
-            .addPlatformAndImage(platforms, image)
-            .addContainerfile(containerfile)
-            .addContext(pwd.relativize(contextDir.toPath())));
+  @Override
+  protected final void doExecute()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
+    BuildCommandLine buildCommandLine =
+        new BuildCommandLine(this).addArgs(buildArguments).addPlatformAndImage(platforms, image);
+
+    String cf = containerFile();
+    if (!defaultContainerFile().equals(cf)) {
+      buildCommandLine.addContainerfile(cf);
+    }
+
+    buildCommandLine.addParameter(shortestPath(contextDir.toPath()));
+    executeCommand(buildCommandLine);
 
     if (loadDockerCache) {
       loadImage();
     }
   }
 
-  private void loadImage() throws IOException, MojoExecutionException {
+  private void loadImage()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     Path path = dockerImageTar.toPath();
     Files.createDirectories(path.getParent());
-    String tarLocation = pwd.relativize(path).toString();
+    String tarLocation = shortestPath(path);
 
     executeCommand(
         new CommandLine(this)

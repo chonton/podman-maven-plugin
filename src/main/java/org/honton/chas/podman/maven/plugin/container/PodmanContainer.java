@@ -7,23 +7,15 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
-import org.honton.chas.podman.maven.plugin.config.DeviceMountConfig;
+import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
 import org.honton.chas.podman.maven.plugin.config.NetworkConfig;
 
-public abstract class PodmanContainer extends PodmanGoal {
-
-  /**
-   * Device mappings
-   *
-   * @since 0.0.5
-   */
-  @Parameter public List<DeviceMountConfig> devices;
+public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGoal {
 
   /** Map of container alias to container configuration. */
-  @Parameter Map<String, ContainerConfig> containers;
+  @Parameter Map<String, T> containers;
 
-  /** Map of networks */
+  /** Network Configuration */
   @Parameter NetworkConfig network;
 
   // Current maven project
@@ -34,14 +26,14 @@ public abstract class PodmanContainer extends PodmanGoal {
     return jobName.replaceAll("[^a-zA-Z0-9_.-]", ".");
   }
 
-  protected static String containerIdPropertyName(ContainerConfig containerConfig) {
+  protected static String containerIdPropertyName(IdentityConfig containerConfig) {
     return "container." + containerConfig.alias + ".id";
   }
 
   @Override
   protected final void doExecute() throws IOException, MojoExecutionException {
     String networkName = getNetworkName();
-    List<ContainerConfig> ordered = ContainerConfigHelper.order(networkName, containers, getLog());
+    List<T> ordered = IdentityConfigHelper.order(networkName, containers, getLog());
     doExecute(ordered, networkName);
   }
 
@@ -56,7 +48,7 @@ public abstract class PodmanContainer extends PodmanGoal {
     return project.getArtifactId();
   }
 
-  protected abstract void doExecute(List<ContainerConfig> containerConfigs, String networkName)
+  protected abstract void doExecute(List<T> containerConfigs, String networkName)
       throws IOException, MojoExecutionException;
 
   protected void setProperty(String mavenPropertyName, String mavenPropertyValue) {
@@ -68,7 +60,7 @@ public abstract class PodmanContainer extends PodmanGoal {
     return project.getProperties().getProperty(mavenPropertyName);
   }
 
-  String containerId(ContainerConfig containerConfig) {
+  String containerId(IdentityConfig containerConfig) {
     String containerId = getProperty(containerIdPropertyName(containerConfig));
     if (containerId != null) {
       return containerId;

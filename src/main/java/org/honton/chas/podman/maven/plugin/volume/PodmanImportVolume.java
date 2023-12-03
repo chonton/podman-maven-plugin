@@ -3,6 +3,7 @@ package org.honton.chas.podman.maven.plugin.volume;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -32,7 +33,9 @@ public class PodmanImportVolume extends PodmanGoal {
   @Parameter(defaultValue = "${project}", required = true, readonly = true)
   MavenProject project;
 
-  protected final void doExecute() throws IOException, MojoExecutionException {
+  @Override
+  protected final void doExecute()
+      throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     File tar;
     if (src.isDirectory()) {
       tar =

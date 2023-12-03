@@ -10,12 +10,12 @@ public class BindMountConfig {
   @Parameter(required = true)
   public String source;
 
-  /** Permissions for any created host directories */
-  @Parameter public String permissions;
-
   /** Absolute path of container directory */
   @Parameter(required = true)
   public String destination;
+
+  /** Permissions for any created host directories */
+  @Parameter public String permissions;
 
   /** Container access is readonly */
   @Parameter(defaultValue = "false")
