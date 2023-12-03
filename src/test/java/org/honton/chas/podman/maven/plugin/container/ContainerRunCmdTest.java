@@ -6,7 +6,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ContainerRunCommandLineTest {
+class ContainerRunCmdTest {
 
   @Test
   void posixFilePermissions() {
@@ -24,7 +24,7 @@ class ContainerRunCommandLineTest {
   }
 
   private static void assertBit(String mode, PosixFilePermission filePermission) {
-    Set<PosixFilePermission> actual = ContainerRunCommandLine.posixFilePermissions(mode);
+    Set<PosixFilePermission> actual = ContainerRunCmd.posixFilePermissions(mode);
     Assertions.assertEquals(1, actual.size());
     Assertions.assertEquals(EnumSet.of(filePermission), actual);
   }

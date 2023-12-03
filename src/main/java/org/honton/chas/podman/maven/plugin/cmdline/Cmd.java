@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.honton.chas.podman.maven.plugin.config.ConnectionCfg;
 
-public class CommandLine {
+public class Cmd {
   protected final List<String> command;
 
-  public CommandLine(ConnectionCfg goal) {
+  public Cmd(ConnectionCfg goal) {
     command = new ArrayList<>();
     command.add(goal.getCli());
 
@@ -21,12 +21,12 @@ public class CommandLine {
     }
   }
 
-  public CommandLine addCmd(String cmd) {
+  public Cmd addCmd(String cmd) {
     command.add(cmd);
     return this;
   }
 
-  public CommandLine addParameter(String parameter) {
+  public Cmd addParameter(String parameter) {
     command.add(parameter);
     return this;
   }

@@ -1,19 +1,19 @@
-package org.honton.chas.podman.maven.plugin.cmdline;
+package org.honton.chas.podman.maven.plugin.build;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.honton.chas.podman.maven.plugin.build.PodmanBuild;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
-public class BuildCommandLine extends CommandLine {
-  public BuildCommandLine(PodmanBuild goal) {
+public class BuildCmd extends Cmd {
+  public BuildCmd(PodmanBuild goal) {
     super(goal);
     addCmd("build");
   }
 
-  public BuildCommandLine addArgs(Map<String, String> buildArguments) {
+  public BuildCmd addArgs(Map<String, String> buildArguments) {
     if (buildArguments != null) {
       buildArguments.forEach(
           (k, v) -> {
@@ -43,7 +43,7 @@ public class BuildCommandLine extends CommandLine {
     return false;
   }
 
-  public BuildCommandLine addPlatformAndImage(List<String> platforms, String image) {
+  public BuildCmd addPlatformAndImage(List<String> platforms, String image) {
     if (addPlatforms(platforms)) {
       command.add("--manifest");
     } else {
@@ -53,9 +53,8 @@ public class BuildCommandLine extends CommandLine {
     return this;
   }
 
-  public BuildCommandLine addContainerfile(String containerfile) {
+  public void addContainerfile(String containerfile) {
     command.add("--file");
     command.add(containerfile);
-    return this;
   }
 }

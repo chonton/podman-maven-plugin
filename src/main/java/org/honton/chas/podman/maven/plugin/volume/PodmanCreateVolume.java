@@ -8,7 +8,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 /**
  * Create a Volume
@@ -26,11 +26,7 @@ public class PodmanCreateVolume extends PodmanGoal {
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     List<String> command =
-        new CommandLine(this)
-            .addCmd("volume")
-            .addParameter("create")
-            .addParameter(volume)
-            .getCommand();
+        new Cmd(this).addCmd("volume").addParameter("create").addParameter(volume).getCommand();
     executeCommand(command);
   }
 }

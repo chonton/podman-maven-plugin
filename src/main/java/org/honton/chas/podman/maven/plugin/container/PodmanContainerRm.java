@@ -29,14 +29,12 @@ public class PodmanContainerRm extends PodmanContainer<IdentityConfig> {
 
   @SneakyThrows
   private void rmNetwork(String networkName) {
-    NetworkCommandLine cmdLine = new NetworkCommandLine(this);
-    cmdLine.addCmd("rm");
-    cmdLine.addParameter(networkName);
+    NetworkCmd cmdLine = new NetworkRmCmd(this, networkName);
     execYieldInt(cmdLine.getCommand());
   }
 
   @SneakyThrows
   private void rmContainer(IdentityConfig containerConfig) {
-    executeCommand(new ContainerRmCommandLine(this, containerConfig));
+    executeCommand(new ContainerRmCmd(this, containerConfig));
   }
 }

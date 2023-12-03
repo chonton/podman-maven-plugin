@@ -1,11 +1,11 @@
 package org.honton.chas.podman.maven.plugin.container;
 
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
 
-class ContainerRmCommandLine extends CommandLine {
+class ContainerRmCmd extends Cmd {
 
-  ContainerRmCommandLine(PodmanContainerRm goal, IdentityConfig containerConfig) {
+  ContainerRmCmd(PodmanContainerRm goal, IdentityConfig containerConfig) {
     super(goal);
     addCmd("container");
     addCmd("rm");

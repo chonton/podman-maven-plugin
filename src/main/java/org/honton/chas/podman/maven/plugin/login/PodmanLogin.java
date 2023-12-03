@@ -13,7 +13,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcherException;
@@ -47,7 +47,7 @@ public class PodmanLogin extends PodmanGoal {
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
     Server server = getAuthInfo();
     List<String> command =
-        new CommandLine(this)
+        new Cmd(this)
             .addCmd("login")
             .addParameter("--username")
             .addParameter(server.getUsername())

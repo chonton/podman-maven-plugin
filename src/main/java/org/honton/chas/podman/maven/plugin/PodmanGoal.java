@@ -23,7 +23,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.honton.chas.podman.maven.plugin.config.ConnectionCfg;
 
 /** podman goal base functionality */
@@ -131,7 +131,7 @@ public abstract class PodmanGoal extends AbstractMojo implements ConnectionCfg {
     }
   }
 
-  public void executeCommand(CommandLine generator)
+  public void executeCommand(Cmd generator)
       throws MojoExecutionException, IOException, ExecutionException, InterruptedException {
     executeCommand(generator.getCommand());
   }

@@ -22,7 +22,7 @@ public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGo
   @Parameter(defaultValue = "${project}", readonly = true)
   MavenProject project;
 
-  static String sanitize(String jobName) {
+  private static String sanitize(String jobName) {
     return jobName.replaceAll("[^a-zA-Z0-9_.-]", ".");
   }
 
@@ -37,7 +37,7 @@ public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGo
     doExecute(ordered, networkName);
   }
 
-  final String getNetworkName() {
+  private String getNetworkName() {
     if (network != null && network.name != null) {
       return network.name;
     }

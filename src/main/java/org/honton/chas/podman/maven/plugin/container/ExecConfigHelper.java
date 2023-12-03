@@ -27,7 +27,7 @@ import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.Interpolator;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.honton.chas.podman.maven.plugin.config.ExecConfig;
 import org.honton.chas.podman.maven.plugin.config.HttpWaitConfig;
 import org.honton.chas.podman.maven.plugin.config.IdentityConfig;
@@ -55,7 +55,7 @@ public class ExecConfigHelper<C extends IdentityConfig> {
         };
   }
 
-  public void startAndWait(Function<LogConfig, CommandLine> logCommand, ExecConfig containerConfig)
+  public void startAndWait(Function<LogConfig, Cmd> logCommand, ExecConfig containerConfig)
       throws IOException,
           InterpolationException,
           MojoExecutionException,
@@ -95,7 +95,7 @@ public class ExecConfigHelper<C extends IdentityConfig> {
   }
 
   private void startLogSpooler(
-      Function<LogConfig, CommandLine> logCmd, ExecConfig config, Consumer<String> matcher)
+      Function<LogConfig, Cmd> logCmd, ExecConfig config, Consumer<String> matcher)
       throws IOException {
 
     Consumer<String> stdOut;
@@ -109,7 +109,7 @@ public class ExecConfigHelper<C extends IdentityConfig> {
       stdErr = composite(matcher, goal::errorLine);
     }
 
-    CommandLine command = logCmd.apply(logConfig);
+    Cmd command = logCmd.apply(logConfig);
     goal.createProcess(completionService, command.getCommand(), null, stdOut, stdErr);
   }
 

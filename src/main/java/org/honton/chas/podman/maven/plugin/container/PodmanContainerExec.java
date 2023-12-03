@@ -24,10 +24,8 @@ public class PodmanContainerExec extends PodmanContainer<ExecConfig> {
 
   @SneakyThrows
   private void runContainer(ExecConfig containerConfig) {
-    ContainerExecCommandLine<?, ExecConfig> execCommandLine =
-        new ContainerExecCommandLine<>(this, containerConfig)
-            .addEnvironment(getLog()::warn)
-            .addContainerCmd();
+    ContainerExecCmd execCommandLine =
+        new ContainerExecCmd(this, containerConfig, getLog()::warn, containerId(containerConfig));
 
     new ExecConfigHelper<>(this).startAndWait(logConfig -> execCommandLine, containerConfig);
   }

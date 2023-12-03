@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 import org.honton.chas.podman.maven.plugin.config.ContainerConfig;
 
 /**
@@ -30,12 +30,7 @@ public class PodmanContainerRun extends PodmanContainer<ContainerConfig> {
 
   @SneakyThrows
   private void createNetwork(String networkName) {
-    NetworkCommandLine cmdLine = new NetworkCommandLine(this);
-    cmdLine.addCmd("create");
-    if (network != null && network.driver != null) {
-      cmdLine.addParameter("--driver").addParameter(network.driver);
-    }
-    cmdLine.addParameter(networkName);
+    NetworkCmd cmdLine = new NetworkCreateCmd(this, network, networkName);
 
     int exitCode = execYieldInt(cmdLine.getCommand());
     if (exitCode != 0 && !errorOutput.toString().contains("network already exists")) {
@@ -45,15 +40,8 @@ public class PodmanContainerRun extends PodmanContainer<ContainerConfig> {
 
   @SneakyThrows
   private void runContainer(ContainerConfig containerConfig, String networkName) {
-    ContainerRunCommandLine runCommandLine =
-        new ContainerRunCommandLine(this, containerConfig)
-            .addContainerName()
-            .addContainerOptions(networkName)
-            .addMounts()
-            .addPorts()
-            .addEnvironment(getLog()::warn)
-            .addContainerImage()
-            .addContainerCmd();
+    ContainerRunCmd runCommandLine =
+        new ContainerRunCmd(this, containerConfig, getLog()::warn, networkName);
 
     String containerId = execYieldString(runCommandLine.getCommand());
     setProperty(containerIdPropertyName(containerConfig), containerId);
@@ -64,15 +52,14 @@ public class PodmanContainerRun extends PodmanContainer<ContainerConfig> {
     }
 
     new ExecConfigHelper<>(this)
-        .startAndWait(
-            logConfig -> new LogsCommandLine(this, logConfig, containerId), containerConfig);
+        .startAndWait(logConfig -> new LogsCmd(this, logConfig, containerId), containerConfig);
   }
 
   private void setAssignedPorts(String containerId, Map<Integer, String> portToPropertyName)
       throws MojoExecutionException, IOException, ExecutionException, InterruptedException {
     String inspect =
         execYieldString(
-            new CommandLine(this)
+            new Cmd(this)
                 .addCmd("container")
                 .addCmd("inspect")
                 .addParameter(containerId)

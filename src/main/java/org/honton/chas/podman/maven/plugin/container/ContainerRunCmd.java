@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import lombok.Getter;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.honton.chas.podman.maven.plugin.config.BindMountConfig;
@@ -18,24 +19,30 @@ import org.honton.chas.podman.maven.plugin.config.DeviceMountConfig;
 import org.honton.chas.podman.maven.plugin.config.TempFsMountConfig;
 import org.honton.chas.podman.maven.plugin.config.VolumeMountConfig;
 
-class ContainerRunCommandLine
-    extends ContainerExecCommandLine<ContainerRunCommandLine, ContainerConfig> {
+class ContainerRunCmd extends ContainerEnvCmd {
+
   private final PodmanContainerRun goal;
+
   @Getter private final Map<Integer, String> portToPropertyName = new HashMap<>();
 
-  ContainerRunCommandLine(PodmanContainerRun goal, ContainerConfig containerConfig) {
-    super(goal, containerConfig);
+  ContainerRunCmd(
+      PodmanContainerRun goal,
+      ContainerConfig containerConfig,
+      Consumer<String> warn,
+      String networkName)
+      throws MojoExecutionException, IOException {
+    super(goal, containerConfig, warn);
     this.goal = goal;
-    addCmd(subCommand());
     addParameter("--detach");
+    addContainerName(containerConfig);
+    addContainerOptions(containerConfig, networkName);
+    addMounts(containerConfig);
+    addPorts(containerConfig);
+    addContainerImage(containerConfig);
+    addContainerCmd(containerConfig);
   }
 
-  @Override
-  String subCommand() {
-    return "run";
-  }
-
-  public static Set<PosixFilePermission> posixFilePermissions(String permissions) {
+  static Set<PosixFilePermission> posixFilePermissions(String permissions) {
     int mode = Integer.parseInt(permissions, 8);
     Set<PosixFilePermission> perms = EnumSet.noneOf(PosixFilePermission.class);
     for (int i = PosixFilePermission.values().length - 1; mode != 0; --i) {
@@ -45,44 +52,6 @@ class ContainerRunCommandLine
       mode >>>= 1;
     }
     return perms;
-  }
-
-  ContainerRunCommandLine addContainerName() {
-    addParameter("--name");
-    addParameter(containerConfig.name);
-    if (!containerConfig.alias.equals(containerConfig.name)) {
-      addParameter("--network-alias");
-      addParameter(containerConfig.alias);
-    }
-    return this;
-  }
-
-  public ContainerRunCommandLine addContainerImage() throws MojoExecutionException {
-    if (containerConfig.image == null) {
-      throw new MojoExecutionException("Missing image for container " + containerConfig.alias);
-    }
-    addParameter(containerConfig.image);
-    return this;
-  }
-
-  ContainerRunCommandLine addContainerOptions(String network) {
-    addParameter("--network").addParameter(network);
-
-    if (containerConfig.memory != null) {
-      addParameter("--memory").addParameter(containerConfig.memory);
-    }
-    if (containerConfig.memorySwap != null) {
-      addParameter("--memory-swap").addParameter(containerConfig.memorySwap);
-    }
-
-    if (containerConfig.workDir != null) {
-      addParameter("-w").addParameter(containerConfig.workDir);
-    }
-
-    if (containerConfig.entrypoint != null) {
-      addParameter("--entrypoint").addParameter(containerConfig.entrypoint);
-    }
-    return this;
   }
 
   private static String getMountOptions(DeviceMountConfig config) {
@@ -99,7 +68,59 @@ class ContainerRunCommandLine
     return options.toString();
   }
 
-  public ContainerRunCommandLine addDevices(List<DeviceMountConfig> devices) {
+  private static void createDirs(Path path, Set<PosixFilePermission> fileAttributes)
+      throws IOException {
+    Path parent = path.getParent();
+    if (Files.notExists(parent)) {
+      createDirs(parent, fileAttributes);
+    }
+    Files.createDirectory(path);
+    if (!fileAttributes.isEmpty()) {
+      Files.setPosixFilePermissions(path, fileAttributes);
+    }
+  }
+
+  @Override
+  String subCommand() {
+    return "run";
+  }
+
+  private void addContainerName(ContainerConfig containerConfig) {
+    addParameter("--name");
+    addParameter(containerConfig.name);
+    if (!containerConfig.alias.equals(containerConfig.name)) {
+      addParameter("--network-alias");
+      addParameter(containerConfig.alias);
+    }
+  }
+
+  private void addContainerImage(ContainerConfig containerConfig) throws MojoExecutionException {
+    if (containerConfig.image == null) {
+      throw new MojoExecutionException("Missing image for container " + containerConfig.alias);
+    }
+    addParameter(containerConfig.image);
+  }
+
+  private void addContainerOptions(ContainerConfig containerConfig, String network) {
+    addParameter("--network").addParameter(network);
+
+    if (containerConfig.memory != null) {
+      addParameter("--memory").addParameter(containerConfig.memory);
+    }
+    if (containerConfig.memorySwap != null) {
+      addParameter("--memory-swap").addParameter(containerConfig.memorySwap);
+    }
+
+    if (containerConfig.workDir != null) {
+      addParameter("-w").addParameter(containerConfig.workDir);
+    }
+
+    if (containerConfig.entrypoint != null) {
+      addParameter("--entrypoint").addParameter(containerConfig.entrypoint);
+    }
+  }
+
+  private void addDevices(List<DeviceMountConfig> devices) {
     if (devices != null) {
       for (DeviceMountConfig config : devices) {
         StringBuilder sb = new StringBuilder().append(config.source);
@@ -117,17 +138,15 @@ class ContainerRunCommandLine
         addParameter("--device").addParameter(sb.toString());
       }
     }
-    return this;
   }
 
-  ContainerRunCommandLine addMounts() throws IOException {
+  private void addMounts(ContainerConfig containerConfig) throws IOException {
     if (containerConfig.mounts != null) {
       addBinds(containerConfig.mounts.binds);
       addTemps(containerConfig.mounts.temps);
       addVolumes(containerConfig.mounts.volumes);
       addDevices(containerConfig.mounts.devices);
     }
-    return this;
   }
 
   private void addTemps(List<TempFsMountConfig> temps) {
@@ -159,18 +178,6 @@ class ContainerRunCommandLine
     }
   }
 
-  private static void createDirs(Path path, Set<PosixFilePermission> fileAttributes)
-      throws IOException {
-    Path parent = path.getParent();
-    if (Files.notExists(parent)) {
-      createDirs(parent, fileAttributes);
-    }
-    Files.createDirectory(path);
-    if (!fileAttributes.isEmpty()) {
-      Files.setPosixFilePermissions(path, fileAttributes);
-    }
-  }
-
   private Set<PosixFilePermission> getFileAttributes(String permissions) {
     if (permissions == null) {
       return Set.of();
@@ -197,11 +204,10 @@ class ContainerRunCommandLine
     }
   }
 
-  ContainerRunCommandLine addPorts() {
+  private void addPorts(ContainerConfig containerConfig) {
     if (containerConfig.ports != null) {
       containerConfig.ports.forEach(this::addPort);
     }
-    return this;
   }
 
   private void addPort(String mavenPropertyName, Integer containerPort) {

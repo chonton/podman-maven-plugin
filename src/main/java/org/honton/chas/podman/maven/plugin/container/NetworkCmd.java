@@ -1,11 +1,11 @@
 package org.honton.chas.podman.maven.plugin.container;
 
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
-class NetworkCommandLine extends CommandLine {
+class NetworkCmd extends Cmd {
 
-  NetworkCommandLine(PodmanGoal goal) {
+  NetworkCmd(PodmanGoal goal) {
     super(goal);
     addCmd("network");
   }

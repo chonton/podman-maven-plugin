@@ -12,7 +12,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.archiver.tar.TarArchiver;
 import org.codehaus.plexus.archiver.util.DefaultFileSet;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 /**
  * Copy content to a volume
@@ -46,7 +46,7 @@ public class PodmanImportVolume extends PodmanGoal {
     }
 
     executeCommand(
-        new CommandLine(this)
+        new Cmd(this)
             .addCmd("volume")
             .addParameter("import")
             .addParameter(volume)

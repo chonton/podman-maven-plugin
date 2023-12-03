@@ -12,8 +12,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.honton.chas.podman.maven.plugin.PodmanContainerfile;
-import org.honton.chas.podman.maven.plugin.cmdline.BuildCommandLine;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 /** Create a container image from the Containerfile directions and files from context */
 @Mojo(name = "build", defaultPhase = LifecyclePhase.PACKAGE, threadSafe = true)
@@ -43,16 +42,16 @@ public class PodmanBuild extends PodmanContainerfile {
   @Override
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
-    BuildCommandLine buildCommandLine =
-        new BuildCommandLine(this).addArgs(buildArguments).addPlatformAndImage(platforms, image);
+    BuildCmd buildCmd =
+        new BuildCmd(this).addArgs(buildArguments).addPlatformAndImage(platforms, image);
 
     String cf = containerFile();
     if (!defaultContainerFile().equals(cf)) {
-      buildCommandLine.addContainerfile(cf);
+      buildCmd.addContainerfile(cf);
     }
 
-    buildCommandLine.addParameter(shortestPath(contextDir.toPath()));
-    executeCommand(buildCommandLine);
+    buildCmd.addParameter(shortestPath(contextDir.toPath()));
+    executeCommand(buildCmd);
 
     if (loadDockerCache) {
       loadImage();
@@ -66,7 +65,7 @@ public class PodmanBuild extends PodmanContainerfile {
     String tarLocation = shortestPath(path);
 
     executeCommand(
-        new CommandLine(this)
+        new Cmd(this)
             .addCmd("save")
             .addParameter("--output")
             .addParameter(tarLocation)

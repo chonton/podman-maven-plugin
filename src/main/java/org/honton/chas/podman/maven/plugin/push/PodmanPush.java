@@ -7,7 +7,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.honton.chas.podman.maven.plugin.PodmanGoal;
-import org.honton.chas.podman.maven.plugin.cmdline.CommandLine;
+import org.honton.chas.podman.maven.plugin.cmdline.Cmd;
 
 /**
  * Push image to registry
@@ -24,6 +24,6 @@ public class PodmanPush extends PodmanGoal {
   @Override
   protected final void doExecute()
       throws IOException, MojoExecutionException, ExecutionException, InterruptedException {
-    executeCommand(new CommandLine(this).addCmd("push").addParameter(image));
+    executeCommand(new Cmd(this).addCmd("push").addParameter(image));
   }
 }
