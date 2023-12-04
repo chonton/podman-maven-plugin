@@ -28,7 +28,7 @@ public class PodmanContainerExec extends PodmanContainer<ExecConfig> {
     ContainerExecCmd execCommandLine =
         new ContainerExecCmd(this, config, getLog()::warn, containerId(config));
 
-    BufferedWriter bufferedWriter = createBufferedWriter(config.log, null);
+    BufferedWriter bufferedWriter = createBufferedWriter(config.log, config.alias + "-exec");
     new ExecHelper(this, config.alias)
         .startAndWait(() -> execCommandLine, config.wait, bufferedWriter, project.getProperties());
   }

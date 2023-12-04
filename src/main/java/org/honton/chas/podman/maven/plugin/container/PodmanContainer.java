@@ -74,8 +74,7 @@ public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGo
     return containerConfig.name;
   }
 
-  BufferedWriter createBufferedWriter(LogConfig logConfig, String alias)
-      throws IOException, MojoExecutionException {
+  BufferedWriter createBufferedWriter(LogConfig logConfig, String logFileName) throws IOException {
     if (logConfig == null) {
       return null;
     }
@@ -83,10 +82,9 @@ public abstract class PodmanContainer<T extends IdentityConfig> extends PodmanGo
     Path path;
     if (logConfig.file != null) {
       path = Path.of(logConfig.file);
-    } else if (alias != null) {
-      path = project.getBasedir().toPath().resolve(Path.of("target", "container", alias + ".log"));
     } else {
-      throw new MojoExecutionException("container exec log requires file parameter");
+      Path basedir = project.getBasedir().toPath();
+      path = basedir.resolve(Path.of("target", "container", logFileName + ".log"));
     }
 
     Files.createDirectories(path.getParent());

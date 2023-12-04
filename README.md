@@ -276,15 +276,15 @@ may be defined using
 #### Ports Map
 
 Key is the name of a maven property. If property is already set, then that value is used as the host
-tcp \[interface:]port; otherwise, the property is set to the value of the dynamically assigned host
+tcp *[interface:]port*; otherwise, the property is set to the value of the dynamically assigned host
 tcp port. Each entry is the value of an exposed container tcp port.
 
 #### Log Config
 
-|  Parameter | Required | Description                                                              |
-|-----------:|:--------:|:-------------------------------------------------------------------------|
-|       file |          | Name of file to receive logs. Default is `target/container/${alias}.log` |
-| timestamps |          | Display timestamp on each line. Default is **false**.                    |
+|  Parameter | Required | Description                                                                                              |
+|-----------:|:--------:|:---------------------------------------------------------------------------------------------------------|
+|       file |          | File to receive logs. Default is `target/container/${alias}.log` or `target/container/${alias}-exec.log` |
+| timestamps |          | Display timestamp on each line. Default is **false**.                                                    |
 
 #### Wait Config
 
@@ -307,11 +307,11 @@ tcp port. Each entry is the value of an exposed container tcp port.
 
 The [container-exec](https://chonton.github.io/podman-maven-plugin/container-exec-mojo.html) goal
 binds by default to the **integration-test** phase. This goal uses `podman container exec` to run
-a command in existing containers.
+a command in an existing container.
 
 After launching, the goal will wait for the `wait` conditions to be satisfied. When executing in
 multiple containers, the container ordering is determined by the `requires` parameter. The `logs`
-configuration instructs the goal to collect container logs until the command is complete.
+configuration instructs the goal to collect exec logs until the command is complete.
 
 ### Container-Exec Configuration
 
